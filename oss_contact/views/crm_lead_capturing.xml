@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="crm_lead_view_form_capturing_details_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.form.capturing.details.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Lead Enquiry and product id fields From  -->
+            <xpath expr="//header/button[@name='%(crm.action_crm_lead2opportunity_partner)d']" position="attributes">
+                <attribute name="attrs">{'invisible': ['|','|', ('type', '=', 'opportunity'),('feasibility_stage', '=', False),('active', '=', False)]}</attribute>
+            </xpath>
+            <xpath expr="//header/field[@name='stage_id']" position="replace">
+                <field name="stage_id" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}"/>
+            </xpath>
+            <!-- Show invisible fields  & hide unnecessary fields in lead view *-->
+            <xpath expr="//group[@name='lead_partner']" position="attributes">
+                <attribute name="attrs">{}</attribute>
+            </xpath>
+            <xpath expr="//group/group[4]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group/group[2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group[@name='lead_partner']/field[@name='partner_name']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//page[@name='extra']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group[@name='lead_info']" position="attributes">
+                <attribute name="attrs">{}</attribute>
+            </xpath>
+            <xpath expr="//page[@name='lead']" position="attributes">
+                <attribute name="attrs">{}</attribute>
+            </xpath>
+            <xpath expr="//group[@name='lead_info']/label[1]" position="attributes">
+                <attribute name="attrs">{'invisible': [('type', '=', 'lead')]}</attribute>
+            </xpath>
+            <xpath expr="//group[@name='lead_info']/div[1]" position="replace">
+                <field name="contact_name" invisible="1"/>
+            </xpath>
+            <xpath expr="//group[@name='lead_priority']"  position='attributes'>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group[@name='opportunity_info']" position="attributes">
+                <attribute name="attrs">{}</attribute>
+            </xpath>
+            <xpath expr="//group[@name='lead_info']/label[@for='contact_name']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group[@name='lead_info']/div[last()]" position="after">
+                <field name="source_id"/>
+                <field name="progress_bar"/>
+                <field name="feasibility_stage" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='team_id']" position="after">
+                <field name="case_id" readonly="1"/>
+                <field name="product_ids" widget="many2many_tags"/>
+                <label for="expected_delivery_date" string="Expected Delivery Timeframe"/>
+                <div class="o_row">
+                    <field name="expected_delivery_date" widget="daterange" nolabel="1" class="oe_inline"
+                        options="{'related_end_date': 'to_delivery_date'}"/>
+                    <label for="to_delivery_date" string="To" attrs="{'invisible': [('expected_delivery_date', '=', False)]}"/>
+                    <field name="to_delivery_date" widget="daterange" nolabel="1" class="oe_inline"
+                        options="{'related_start_date': 'expected_delivery_date'}"/>
+                </div>
+                <field name="contract_duration"/>
+                <field name="certainity" options="{'no_create': True, 'no_edit': True}"/>
+            </xpath>
+            <xpath expr="//field[@name='date_conversion']" position="after">
+                <field name="currency_id"/>
+                <field name="estimated_budget" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="date_deadline" string="Est. Delivery Date"/>
+                <field name="billing_cycle"/>
+                <field name="parent_id" readonly="1"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+            <separator string="Develop Info" attrs="{'invisible': [('type', '=', 'lead')]}"/>
+                <group attrs="{'invisible': [('type', '=', 'lead')]}">
+                    <field name="offered_discount"/>
+                    <field name="payment_mode"/>
+                    <field name="total_mrc"/>
+                    <field name="total_nrc"/>
+                    <field name="total_rc"/>
+                </group>
+                <group attrs="{'invisible': [('type', '=', 'lead')]}">
+                    <field name="estimate_revenue"/>
+                    <field name="contract_penalty"/>
+                    <field name="closure_date"/>
+                    <field name="purchase_process"/>
+                </group>
+            </xpath>
+
+            <!-- Lead Lost additional Remark fields From  -->
+            <xpath expr="//field[@name='lost_reason']" position="after">
+                <field name="lost_additional_remark" attrs="{'invisible': [('active', '=', True)]}"/>
+            </xpath>
+
+            <!-- Lead CAPTURING Pages  -->
+            <xpath expr="//notebook" position="inside">
+                 <!-- Sites Details  From Views -->
+                 <page string="Site Details" name="site_details">
+                    <group>
+                        <group>
+                             <field name="no_of_sites"/>
+                         </group>
+                         <group>
+                            <field name="import_sites_csv" filename="file_name" nolabel="1"/>
+                            <button name="import_csv" string="Upload File" type="object" class="oe_highlight" attrs="{'invisible': [('import_sites_csv', '=', False)]}"/>
+                        </group>
+                        <field name="file_name" invisible="1"/>
+                    </group>
+
+                    <field name="site_address_ids" mode="kanban" nolabel="1" colspan="2" context="{'default_is_company': True, 'default_is_site':True}" attrs="{'invisible':[('active','=',False)]}">
+                        <kanban>
+                            <field name="color"/>
+                            <field name="name"/>
+                            <field name="site_code"/>
+                            <field name="organisation_id"/>
+                            <field name="name_of_site"/>
+                            <field name="site_type"/>
+                            <field name="hosting_models"/>
+                            <templates>
+                                <t t-name="kanban-box">
+                                <t t-set="color" t-value="kanban_color(record.color.raw_value)"/>
+                                <div t-att-class="color + (record.name.raw_value == 1 ? ' oe_kanban_color_alert' : '') + ' oe_kanban_global_click'">
+                                    <div>
+                                        <div class="oe_kanban_details">
+                                            <div t-if="record.site_code"><b> Site Code:</b> <t t-esc="record.site_code.value"/></div>
+                                            <div t-if="record.organisation_id"><b> Organisation:</b> <t t-esc="record.organisation_id.value"/></div>
+                                            <div t-if="record.name_of_site"><b> Name of Site:</b> <t t-esc="record.name_of_site.value"/></div>
+                                            <div t-if="record.name"><b> Site SPOC:</b> <t t-esc="record.name.value"/> <span t-if="record.spoc_lname"><t t-esc="record.spoc_lname.value"/></span></div>
+                                            <div t-if="record.site_type"><b> Site Type:</b> <t t-esc="record.site_type.value"/></div>   
+                                            <div t-if="record.hosting_models"><b> Hosting Models:</b> <t t-esc="record.hosting_models.value"/></div>                     
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </templates>
+                        </kanban>
+                        <form string="Add sites">
+                            <sheet>
+                                <div class="oe_title mb24">
+                                    <h1>
+                                        <group string="Site Code">
+                                            <div>
+                                                <field name="site_code" readonly="1" nolabel="1" class="oe_inline"/>
+                                            </div>
+                                        </group>
+                                    </h1>
+                                    <field name="is_site" invisible="1"/>
+                                    <field name="is_company" invisible="1"/>
+                                    <field name="commercial_partner_id" invisible="1"/>
+                                    <field name="active" invisible="1"/>
+                                    <field name="country_code" invisible="1"/>
+                                    <field name="company_type" widget="radio" options="{'horizontal': true}" invisible="1"/>
+                                    <div class="o_row">
+                                        <field name="parent_id"
+                                            widget="res_partner_many2one"
+                                            placeholder="Company Name..."
+                                            domain="[('is_company', '=', True)]" context="{'default_is_company': True, 'show_vat': True}"
+                                            attrs="{'invisible': ['|', '&amp;', ('is_company','=', True),('parent_id', '=', False),('company_name', '!=', False),('company_name', '!=', '')]}"/>
+                                            <field name="company_name" attrs="{'invisible': ['|', '|', ('company_name', '=', False), ('company_name', '=', ''), ('is_company', '=', True)]}"/>
+                                            <button name="create_company" icon="fa-plus-square" string="Create company"
+                                                type="object" class="oe_edit_only btn-link"
+                                                attrs="{'invisible': ['|', '|', ('is_company','=', True), ('company_name', '=', ''), ('company_name', '=', False)]}"/>
+                                    </div>
+                                </div>
+                                <group>
+                                    <group>
+                                        <field name="name_of_site" string="Name Of Site" placeholder="Enter Name" required="True"/>
+                                        <field name="organisation_id"/>
+                                        <field name="active" eval="True"/>
+                                        <field name="site_type" string="Site Type" required="True"/>
+                                        <field name="hosting_models" options="{'horizontal': true}" required="True"/>
+                                        <span class="o_form_label o_td_label">
+                                            <b>Site SPOC</b>
+                                        </span>
+                                        <div class="oe_title oe_inline">
+                                            <field name="name" nolabel="1" class="oe_inline" placeholder="First Name"/>
+                                            <field name="spoc_lname" nolabel="1" class="oe_inline" placeholder="Last Name"/>
+                                        </div>
+                                        <field name="email" widget="email" string="Site SPOC Email" placeholder="example@example.com" context="{'gravatar_image': True}" attrs="{'required': [('user_ids','!=', [])]}" required="True"/>
+                                        <field name="mobile" widget="phone" string="Site SPOC Phone" placeholder="+91-9889294144" required="True"/>
+                                        <field name="last_mile_connectivity" widget="radio" options="{'horizontal': true}"/>
+                                        <field name="existing_id" attrs="{'invisible': [('last_mile_connectivity','!=', 'yes')]}"/>
+                                        <field name="existing_site_code" attrs="{'invisible': [('last_mile_connectivity','!=', 'yes')]}"/>
+                                        <field name="hardware_support_level"/>
+                                        <field name="router_ids" string="Hardware Router" widget="many2many_tags"/>
+                                    </group>
+                                    <group>
+                                        <span class="o_form_label o_td_label" name="address_name">
+                                            <field name="type" attrs="{'invisible': [('is_company','=', True)], 'required': [('is_company','!=', True)], 'readonly': [('user_ids', '!=', [])]}" class="font-weight-bold"/>
+                                            <b attrs="{'invisible': [('is_company', '=', False)]}">Site Address</b>
+                                        </span>
+                                        <div class="o_address_format">
+                                            <field name="street" placeholder="Address1" class="o_address_street"
+                                                attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                                            <field name="street2" placeholder="Address2" class="o_address_street"
+                                                attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                                            <field name="country_id" placeholder="Country" class="o_address_country" options='{"no_open": True, "no_create": True}'
+                                                   attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                                            <field name="zip" placeholder="Pincode/ZIP"
+                                                attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                                            <field name="city" placeholder="City" style="width: 50%" class="o_address_city"
+                                                   attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                                            <field name="state_id" class="o_address_state" style="width: 46%" placeholder="State" options="{'no_open': True, 'no_quick_create': True}"
+                                                   attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}" context="{'country_id': country_id, 'default_country_id': country_id, 'zip': zip}"/>
+                                        </div>
+                                        <field name="partner_latitude" string="Latitude" placeholder="Latitude"/>
+                                        <field name="partner_longitude" string="Longitude" placeholder="Longitude"/>
+                                        <span class="oe_inline">
+                                            <b>Refresh for Longitude And Latitude</b>
+                                        </span>
+                                        <button string="(refresh)" name="geo_localize" class="btn btn-link" type="object"/>
+                                        <field name="user_ids" invisible="1"/>
+                                        <field name="redundancy_requirement" widget="radio"/>
+                                        <field name="wireless_for_lan" widget="radio" options="{'horizontal': true}"/>
+                                        <field name="site_internet_usage" attrs="{'invisible': [('site_type', '!=', 'branch')]}"/>
+                                        <field name="site_sla"/>
+                                    </group>
+                                </group>
+                                <notebook >
+                                    <page name='internal_notes' string="Transport links">
+                                        <group>
+                                            <field name="tp_link_model_id">
+                                                <tree editable="top">
+                                                    <field name="tp_type"/>
+                                                    <field name="tp_bandwidth"/>
+                                                    <field name="bandwidth_type"/>
+                                                    <field name="tp_sla"/>
+                                                    <field name="tp_media"/>
+                                                </tree>
+                                            </field>
+                                        </group>
+                                    </page>
+                                </notebook>
+                            </sheet>
+                        </form>
+                    </field>
+                 </page>
+
+                <!-- CoR on Ramp Details From Views -->
+                 <page string="Cloud on Ramp" name="cor_details" context="{'default_lead_id':active_id}">
+                    <group>
+                        <group>
+                            <field name="enable_cloud_on_ramp" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="no_of_cor_sites" attrs="{'invisible':[('enable_cloud_on_ramp','=',False)]}"/>
+                        </group>
+                    </group>
+                    <field name="cor_ramp_ids" mode="kanban" nolabel="1" colspan="2" attrs="{'invisible':['|',('enable_cloud_on_ramp','=',False), ('active','=',False)]}">
+                        <kanban>
+                            <field name="name"/>
+                            <field name="provider_name"/>
+                            <field name="redundency_id"/>
+                            <field name="bandwidth"/>
+                            <templates>
+                                <t t-name="kanban-box">
+                                <div class="oe_kanban_global_click">
+                                    <div>
+                                        <div class="oe_kanban_details">
+                                            <div t-if="record.name"><b> Name:</b> <t t-esc="record.name.value"/></div>
+                                            <div t-if="record.provider_name"><b> Provider Name:</b> <t t-esc="record.provider_name.value"/></div>
+                                            <div t-if="record.redundency_id"><b> Redundency:</b> <t t-esc="record.redundency_id.value"/></div>
+                                            <div t-if="record.bandwidth"><b> Bandwidth:</b> <t t-esc="record.bandwidth.value"/></div>            
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </templates>
+                        </kanban>
+                        <form string="Add CoR">
+                            <sheet>
+                                <div class="oe_title mb24">
+                                    <h1>
+                                        <group string="CoR Site Name">
+                                            <div>
+                                                <field name="name" nolabel="1" class="oe_inline"/>
+                                            </div>
+                                        </group>
+                                    </h1>
+                                </div>
+                                <group>
+                                    <group>
+                                        <field name="lead_id" readonly="1"/>
+                                        <field name="provider_name"/>
+                                        <field name="active"/>
+                                        <field name="redundency_id" widget="many2many_tags"/>
+                                        <label for="bandwidth" string="Bandwidth"/>
+                                        <div class="o_row">
+                                            <field name="bandwidth" nolabel="1" class="oe_inline"/>
+                                            <field name="bandwidth_type" nolabel="1" class="oe_inline"
+                                                   attrs="{'required': [('bandwidth', '!=', 0)]}" placeholder="Select Bandwidth"/>
+                                        </div>
+                                    </group>
+                                    <group>
+                                        <field name="cor_city"/>
+                                        <field name="cor_zip"/>
+                                        <field name="cor_state"/>
+                                        <field name="cor_country"/>
+                                        <field name="cor_country_code"/>
+                                        <field name="transit_wan_edge"/>
+                                        <field name="total_liscenses"/>
+                                    </group>
+                                    <group>
+                                        <field name="location_a_end"/>
+                                    </group>
+                                    <group>
+                                        <field name="site_spoc_fname"/>
+                                        <field name="site_spoc_lname"/>
+                                        <field name="site_spoc_phone"/>
+                                        <field name="site_spoc_email"/>
+                                    </group>
+                                </group>
+                            </sheet>
+                        </form>
+                    </field>
+                 </page>
+
+                 <!-- Application Details From Views -->
+
+                 <page string="Application Details" name="application_details" context="{'default_lead_id':active_id}">
+                    <group>
+                        <group>
+                            <field name="is_application_modelling" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="no_of_applications" attrs="{'invisible':[('is_application_modelling','=',False)]}"/>
+                        </group>
+                    </group>
+                    <field name="app_modeling_ids" mode="kanban" nolabel="1" colspan="2" attrs="{'invisible':['|',('is_application_modelling','=',False), ('active','=',False)]}">
+                        <kanban>
+                            <field name="name"/>
+                            <field name="application_hosted"/>
+                            <field name="ip_addr_fqdn"/>
+                            <field name="application_id"/>
+                            <templates>
+                                <t t-name="kanban-box">
+                                <div class="oe_kanban_global_click">
+                                    <div>
+                                        <div class="oe_kanban_details">
+                                            <div t-if="record.application_id"><b> Application ID:</b> <t t-esc="record.application_id.value"/></div>
+                                            <div t-if="record.name"><b> Name:</b> <t t-esc="record.name.value"/></div>
+                                            <div t-if="record.application_hosted"><b> Application Hosted:</b> <t t-esc="record.application_hosted.value"/></div>
+                                            <div t-if="record.ip_addr_fqdn"><b> IP Address:</b> <t t-esc="record.ip_addr_fqdn.value"/></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </templates>
+                        </kanban>
+                        <form string="Add Applications">
+                            <sheet>
+                                <div class="oe_title mb24">
+                                    <h1>
+                                        <group string="Application Name">
+                                            <div>
+                                                <field name="name" nolabel="1" class="oe_inline"/>
+                                            </div>
+                                        </group>
+                                    </h1>
+                                </div>
+                                <group>
+                                    <group>
+                                        <field name="application_id" readonly="1"/>
+                                        <field name="active" eval="True"/>
+                                        <field name="lead_id" readonly="1"/>
+                                        <field name="application_hosted" widget="radio" options="{'horizontal': true}"/>
+                                        <field name="application_priority"/>
+                                        <field name="port"/>
+                                    </group>
+                                    <group>
+                                        <field name="ip_addr_fqdn"/>
+                                        <field name="application_concurrent_users"/>
+                                        <label for="per_session_bandwith" string="Bandwidth per session"/>
+                                        <div class="o_row">
+                                            <field name="per_session_bandwith" nolabel="1" class="oe_inline"/>
+                                            <field name="bandwidth_type" nolabel="1" class="oe_inline"
+                                                   attrs="{'required': [('per_session_bandwith', '!=', 0)]}"
+                                                   placeholder="Select Bandwidth"/>
+                                        </div>
+                                        <field name="application_qos_parameter"/>
+                                    </group>
+                                </group>
+                            </sheet>
+                        </form>
+                    </field>
+                 </page>
+            </xpath>
+
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+              <button class="oe_stat_button" type="object" name="action_show_linked_leads" icon="fa-link">
+                <div class="o_stat_info">
+                  <field name="linked_lead_count" class="o_stat_value"/>
+                  <span class="o_stat_text">Linked Leads</span>
+                </div>
+              </button>
+              <button class="oe_stat_button" type="action" name="%(crm_lead_tasks_action2)d" icon="fa-tasks">
+                <div class="o_stat_info">
+                  <field name="task_count" class="o_stat_value"/>
+                  <span class="o_stat_text">Tasks</span>
+                </div>
+              </button>
+              <button class="oe_stat_button" type="action" name="%(crm_lead_stakeholder_action2)d" icon="fa-users">
+                <div class="o_stat_info">
+                  <field name="stakeholder_count" class="o_stat_value"/>
+                  <span class="o_stat_text">Stakeholder</span>
+                </div>
+              </button>
+            </xpath>
+            <xpath expr="//field[@name='website']" position='attributes'>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='lang_id']" position='attributes'>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='email_cc']" position='attributes'>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='function']" position='attributes'>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//label[@for='mobile']" position='attributes'>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='mobile']" position='attributes'>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//h2[@class='o_row no-gutters align-items-end']" position='attributes'>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="crm_lead_view_kanban_opportunity" model="ir.ui.view">
+        <field name="name">crm.lead.view.kanban.inherit.</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads" />
+        <field name="arch" type="xml">
+            <xpath expr="//progressbar"  position='attributes'>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//div[@class='o_kanban_record_subtitle']"  position='attributes'>
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="crm_lead_kanban_view_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.view.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_lead_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr='//kanban[@class="o_kanban_mobile"]' position="attributes">
+                <attribute name="default_group_by">stage_id</attribute>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="crm_stage_tree_view" model="ir.ui.view">
+        <field name="name">crm.stage.tree.inherit.</field>
+        <field name="model">crm.stage</field>
+        <field name="inherit_id" ref="crm.crm_stage_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='is_won']" position='after'>
+                <field name="is_lead"/>
+                <field name="default_stage"/>
+                <field name="feasibility_stage"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="crm_stage_form_view" model="ir.ui.view">
+        <field name="name">crm.stage.form.inherit.</field>
+        <field name="model">crm.stage</field>
+        <field name="inherit_id" ref="crm.crm_stage_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='is_won']" position='after'>
+                <field name="is_lead"/>
+                <field name="default_stage"/>
+                <field name="feasibility_stage"/>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- tree view define for cpe.product model   -->
+    <record id="cpe_product_tree_view" model="ir.ui.view">
+        <field name="name">cpe.product.tree.view</field>
+        <field name="model">cpe.product</field>
+        <field name= "arch" type = "xml">
+            <tree string="CPE Product">
+                <field name="oem_model_id"/>
+                <field name="product_id"/>
+                <field name="no_of_devices"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="cpe_product_form_view" model="ir.ui.view">
+        <field name="name">cpe.product.form.view</field>
+        <field name="model">cpe.product</field>
+        <field name= "arch" type = "xml">
+            <form string="CPE Product">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="oem_model_id"/>
+                            <field name="product_id" options="{'no_create_edit': True, 'no_quick_create': True}"/>
+                            <!-- <field name="product_cpe_id" attrs="{'invisible':[('id','=',False)]}"/> -->
+                        </group>
+                        <group>
+                            <field name="no_of_devices"/>
+                            <field name="product_template_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="sale_progress_bar_view" model="ir.ui.view">
+        <field name="name">sale.order.inherit.</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='sale_order_template_id']" position='after'>
+                <field name="progress_bar"/>
+                <field name="opportunity_id"/>
+                <field name="case_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="crm.crm_lead_action_pipeline">
+        <field name="name">Opportunity</field>
+    </record>
+
+    <menuitem
+        id="crm.menu_crm_opportunities"
+        name="Opportunity"
+        parent="crm.crm_menu_sales"
+        action="crm.action_your_pipeline"
+        sequence="1"/>
+</odoo>

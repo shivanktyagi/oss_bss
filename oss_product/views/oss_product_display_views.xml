@@ -1,0 +1,619 @@
+<odoo>
+	<data>
+<!-- List/Tree Views-->
+		<record id="product_family_category_list" model="ir.ui.view">
+			<field name="name">oss_product.family.category.list</field>
+			<field name="model">oss_product.family.category</field>
+			<field name="arch" type="xml">
+				<tree string="Product Family Category">
+					<field name="name"/>
+					<field name="description"/>
+				</tree>
+			</field>
+		</record>
+
+		<record id="product_family_type_list" model="ir.ui.view">
+			<field name="name">oss_product.family.type.list</field>
+			<field name="model">oss_product.family.type</field>
+			<field name="arch" type="xml">
+				<tree string="Product Family type">
+					<field name="name"/>
+					<field name="description"/>
+				</tree>
+			</field>
+		</record>
+
+		<record id="product_family_list" model="ir.ui.view">
+			<field name="name">oss_product.family.list</field>
+			<field name="model">oss_product.family</field>
+			<field name="arch" type="xml">
+				<tree string="Product Family">
+					<field name="name"/>
+					<field name="description"/>
+					<field name="category"/>
+					<field name="ptype"/>
+					<!-- <field name="image" widget="image" class="oe_avatar"/> -->
+				</tree>
+			</field>
+		</record>
+
+		<record id="oss_product_group_category_list" model="ir.ui.view">
+			<field name="name">oss_product.group.category.list</field>
+			<field name="model">oss_product.group.category</field>
+			<field name="arch" type="xml">
+				<tree string="Product Group Category">
+					<field name="name"/>
+					<field name="description"/>
+				</tree>
+			</field>
+		</record>
+		<record id="oss_product_group_type_list" model="ir.ui.view">
+			<field name="name">oss_product.group.type.list</field>
+			<field name="model">oss_product.group.type</field>
+			<field name="arch" type="xml">
+				<tree string="Product Group Type">
+					<field name="name"/>
+					<field name="description"/>
+				</tree>
+			</field>
+		</record>
+
+<!-- from Views-->
+		<record id="oss_product_family_category_form" model="ir.ui.view">
+			<field name="name">oss_product.family.category.form</field>
+			<field name="model">oss_product.family.category</field>
+			<field name="arch" type="xml">
+				<form string="Product Family Category">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="description"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_product_family_type_form" model="ir.ui.view">
+			<field name="name">oss_product.family.type.form</field>
+			<field name="model">oss_product.family.type</field>
+			<field name="arch" type="xml">
+				<form string="Product Family type">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="description"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_product_family_form" model="ir.ui.view">
+			<field name="name">oss_product.family.form</field>
+			<field name="model">oss_product.family</field>
+			<field name="arch" type="xml">
+				<form string="Product Family">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="description"/>
+							<field name="category"/>
+							<field name="ptype"/>
+							<field name="image" widget="image" class="oe_avatar"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_product_group_category_form" model="ir.ui.view">
+			<field name="name">oss_product.group.category.form</field>
+			<field name="model">oss_product.group.category</field>
+			<field name="arch" type="xml">
+				<form string="Product Group Category">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="description"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_product_group_type_form" model="ir.ui.view">
+			<field name="name">oss_product.group.type.form</field>
+			<field name="model">oss_product.group.type</field>
+			<field name="arch" type="xml">
+				<form string="Product Group type">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="description"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+
+		<record id="oss_product_form" model="ir.ui.view">
+			<field name="name">oss.product.form</field>
+			<field name="model">oss.product</field>
+			<field name="arch" type="xml">
+				<form string="Product">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="description"/>
+							<field name="family_name"/>
+							<field name="category"/>
+							<field name="ptype"/>
+							<!-- <field name="group_name"/> -->
+							<field name="product_picture" widget="image" class="oe_avatar"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_product_group_form" model="ir.ui.view">
+			<field name="name">oss_product.group.form</field>
+			<field name="model">oss_product.group</field>
+			<field name="arch" type="xml">
+				<form string="Product Group">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="description"/>
+							<field name="family_name"/>
+							<field name="category"/>
+							<field name="ptype"/>
+							<field name="location"/>
+							<field name="picture" widget="image" class="oe_avatar"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_location_form" model="ir.ui.view">
+			<field name="name">oss.location.form</field>
+			<field name="model">oss.location</field>
+			<field name="arch" type="xml">
+				<form string="Location">
+					<sheet>
+						<group>
+							<field name="country"/>
+							<field name="province_state"/>
+							<field name="city"/>
+							<field name="street"/>
+							<field name="zip_code"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_varient_form" model="ir.ui.view">
+			<field name="name">oss.varient.form</field>
+			<field name="model">oss.varient</field>
+			<field name="arch" type="xml">
+				<form string="Varient">
+					<sheet>
+						<group>
+							<field name="varient"/>
+							<field name="product"/>
+							<field name="description"/>
+							<field name="vtype"/>
+							<field name="category"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_varient_config_group_form" model="ir.ui.view">
+			<field name="name">oss_varient.config.group.form</field>
+			<field name="model">oss_varient.config.group</field>
+			<field name="arch" type="xml">
+				<form string="Varient Config Group">
+					<sheet>
+						<group>
+							<field name="variant_config_name"/>
+							<field name="variant" widget="many2many_tags"/>
+							<field name="vgtype"/>
+							<field name="category"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_config_item_form" model="ir.ui.view">
+			<field name="name">oss_config.item.form</field>
+			<field name="model">oss_config.item</field>
+			<field name="arch" type="xml">
+				<form string="Config Item">
+					<sheet>
+						<group>
+							<group>
+								<field name="config_item"/>
+								<field name="description"/>
+								<field name="varient_config"/>
+								<field name="parameter_type"/>
+							</group>
+							<group>
+								<field name="measurement_unit"/>
+								<field name="is_priced"/>
+								<field name="currency_unit"/>
+								<field name="unit_price"/>
+							</group>
+							<group>
+								<field name="minimun_limit"/>
+								<field name="maximum_limit"/>
+								<field name="included_in_base_price"/>
+								<field name="renewable"/>
+								<field name="renew_frequency"/>
+							</group>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_config_options_form" model="ir.ui.view">
+			<field name="name">oss_config.options.form</field>
+			<field name="model">oss_config.options</field>
+			<field name="arch" type="xml">
+				<form string="Config Options">
+					<sheet>
+						<group>
+							<field name="configuration_options"/>
+							<field name="config_item"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_service_componet_options_form" model="ir.ui.view">
+			<field name="name">oss_service.componet.options.form</field>
+			<field name="model">oss_service.componet.options</field>
+			<field name="arch" type="xml">
+				<form string="Service Componet Options">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="varient"/>
+							<field name="config_item"/>
+							<field name="metric"/>
+							<field name="config_options"/>
+							<field name="routers"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_device_config_options_form" model="ir.ui.view">
+			<field name="name">oss_device.config.options.form</field>
+			<field name="model">oss_device.config.options</field>
+			<field name="arch" type="xml">
+				<form string="Device Config Options">
+					<sheet>
+						<group>
+							<field name="oem"/>
+							<field name="series"/>
+							<field name="model_name"/>
+							<field name="description"/>
+							<field name="supported_product_family"/>
+							<field name="category"/>
+							<field name="dtype"/>
+							<field name="product_picture"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+		<record id="oss_varient_config_form" model="ir.ui.view">
+			<field name="name">oss_varient.config.form</field>
+			<field name="model">oss_varient.config</field>
+			<field name="arch" type="xml">
+				<form string="Varient Config">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="varient"/>
+							<field name="config_name"/>
+							<field name="is_priced"/>
+							<field name="currency_unit"/>
+							<field name="unit_price"/>
+							<field name="discount_name"/>
+							<field name="measurement_unit"/>
+							<field name="tax_id"/>
+							<field name="renewable"/>
+							<field name="renew_frequency"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_product_config_form" model="ir.ui.view">
+			<field name="name">oss_product.config.form</field>
+			<field name="model">oss_product.config</field>
+			<field name="arch" type="xml">
+				<form string="Product Config">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="product"/>
+							<field name="config_name"/>
+							<field name="is_priced"/>
+							<field name="currency_unit"/>
+							<field name="unit_price"/>
+							<field name="discount_name"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_config_item_list_form" model="ir.ui.view">
+			<field name="name">oss_config.item.list.form</field>
+			<field name="model">oss_config.item.list</field>
+			<field name="arch" type="xml">
+				<form string="Config Item List">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="description"/>
+							<field name="ctype"/>
+							<field name="is_priced"/>
+							<field name="currency_unit"/>
+							<field name="unit_price"/>
+							<field name="measurement_unit"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_discount_category_form" model="ir.ui.view">
+			<field name="name">oss_discount.category.form</field>
+			<field name="model">oss_discount.category</field>
+			<field name="arch" type="xml">
+				<form string="Discount Category">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="description"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_discount_master_form" model="ir.ui.view">
+			<field name="name">oss_discount.master.form</field>
+			<field name="model">oss_discount.master</field>
+			<field name="arch" type="xml">
+				<form string="Discount Master">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="category"/>
+							<field name="dtype"/>
+							<field name="value"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_currency_form" model="ir.ui.view">
+			<field name="name">oss.currency.form</field>
+			<field name="model">oss.currency</field>
+			<field name="arch" type="xml">
+				<form string="Currency">
+					<sheet>
+						<group>
+							<field name="name"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="oss_tax_form" model="ir.ui.view">
+			<field name="name">oss.tax.form</field>
+			<field name="model">oss.tax</field>
+			<field name="arch" type="xml">
+				<form string="Taxes">
+					<sheet>
+						<group>
+							<field name="name"/>
+							<field name="tax_type"/>
+							<field name="location"/>
+							<field name="Value_percent"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+<!-- Actions-->
+		<record model="ir.actions.act_window" id="oss_product_family_category_action">
+			<field name="name">Product Family Category</field>
+			<field name="res_model">oss_product.family.category</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_product_family_type_action">
+			<field name="name">Product Family Type</field>
+			<field name="res_model">oss_product.family.type</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_product_family_action">
+			<field name="name">Product Family</field>
+			<field name="res_model">oss_product.family</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_product_group_category_action">
+			<field name="name">Product Group Category</field>
+			<field name="res_model">oss_product.group.category</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_product_group_type_action">
+			<field name="name">Product Group Type</field>
+			<field name="res_model">oss_product.group.type</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_product_action">
+			<field name="name">Product</field>
+			<field name="res_model">oss.product</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_product_group_action">
+			<field name="name">Product Group</field>
+			<field name="res_model">oss_product.group</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_location_action">
+			<field name="name">Location</field>
+			<field name="res_model">oss.location</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_varient_action">
+			<field name="name">Varient</field>
+			<field name="res_model">oss.varient</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_varient_config_group_action">
+			<field name="name">Varient Config Group</field>
+			<field name="res_model">oss_varient.config.group</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_config_item_action">
+			<field name="name">Config Item</field>
+			<field name="res_model">oss_config.item</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_config_options_action">
+			<field name="name">Config Options</field>
+			<field name="res_model">oss_config.options</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_service_componet_options_action">
+			<field name="name">Service Componet Options</field>
+			<field name="res_model">oss_service.componet.options</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_device_config_options_action">
+			<field name="name">Device Config Options</field>
+			<field name="res_model">oss_device.config.options</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_varient_config_action">
+			<field name="name">Varient Config</field>
+			<field name="res_model">oss_varient.config</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_product_config_action">
+			<field name="name">Product Config</field>
+			<field name="res_model">oss_product.config</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_config_item_list_action">
+			<field name="name">Config Item List</field>
+			<field name="res_model">oss_config.item.list</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_discount_category_action">
+			<field name="name">Discount Category</field>
+			<field name="res_model">oss_discount.category</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_discount_master_action">
+			<field name="name">Discount Master</field>
+			<field name="res_model">oss_discount.master</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_currency_action">
+			<field name="name">Currency</field>
+			<field name="res_model">oss.currency</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="oss_tax_action">
+			<field name="name">Taxes</field>
+			<field name="res_model">oss.tax</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+<!-- menuitem-->
+		<menuitem id="menu_oss_product_stock" name="OSS Product" parent="stock.menu_stock_config_settings"/>
+
+		<menuitem name="Product Family Category" id="oss_product_family_category_menu" parent="menu_oss_product_stock" action="oss_product_family_category_action" sequence="1"/>
+		<menuitem name="Product Family Type" id="oss_product_family_type_menu" parent="menu_oss_product_stock" action="oss_product_family_type_action" sequence="2"/>
+
+		<menuitem name="Product Family" id="oss_product_family_menu" parent="menu_oss_product_stock" action="oss_product_family_action" sequence="3"/>
+
+
+		<menuitem name="Product" id="oss_product_menu" parent="menu_oss_product_stock" action="oss_product_action" sequence="4"/>
+
+		<menuitem name="Varient" id="oss_varient_menu" parent="menu_oss_product_stock" action="oss_varient_action" sequence="5"/>
+
+		<menuitem name="Varient Config Group" id="oss_varient_config_group_menu" parent="menu_oss_product_stock" action="oss_varient_config_group_action" sequence="6"/>
+
+		<menuitem name="Config Item" id="oss_config_item_menu" parent="menu_oss_product_stock" action="oss_config_item_action" sequence="7"/>
+
+		<menuitem name="Config Options" id="oss_config_options_menu" parent="menu_oss_product_stock" action="oss_config_options_action" sequence="8"/>
+
+		<menuitem name="Service Componet Options" id="oss_service_componet_options_menu" parent="menu_oss_product_stock" action="oss_service_componet_options_action" sequence="9"/>
+
+		<menuitem name="Device Config Options" id="oss_device_config_options_menu" parent="menu_oss_product_stock" action="oss_device_config_options_action" sequence="10"/>
+
+<!-- 		<menuitem name="Product Group" id="oss_product_group_menu" parent="menu_oss_product_stock" action="oss_product_group_action" sequence="8"/>
+
+		<menuitem name="Product Group Category" id="oss_product_group_category_menu" parent="menu_oss_product_stock" action="oss_product_group_category_action" sequence="9"/>
+
+		<menuitem name="Product Group Type" id="oss_product_group_type_menu" parent="menu_oss_product_stock" action="oss_product_group_type_action" sequence="10"/>
+
+		<menuitem name="Location" id="oss_location_menu" parent="menu_oss_product_stock" action="oss_location_action" sequence="11"/>
+
+		<menuitem name="Varient Config" id="oss_varient_config_menu" parent="menu_oss_product_stock" action="oss_varient_config_action" sequence="12"/>
+
+		<menuitem name="Product Config" id="oss_product_config_menu" parent="menu_oss_product_stock" action="oss_product_config_action" sequence="13"/>
+
+		<menuitem name="Config Item List" id="oss_config_item_list_menu" parent="menu_oss_product_stock" action="oss_config_item_list_action" sequence="14"/>
+
+		<menuitem name="Discount Category" id="oss_discount_category_menu" parent="menu_oss_product_stock" action="oss_discount_category_action" sequence="15"/>
+
+		<menuitem name="Discount Master" id="oss_discount_master_menu" parent="menu_oss_product_stock" action="oss_discount_master_action" sequence="16"/>
+
+		<menuitem name="Currency" id="oss_currency_menu" parent="menu_oss_product_stock" action="oss_currency_action" sequence="17"/>
+
+		<menuitem name="Taxes" id="oss_tax_menu" parent="menu_oss_product_stock" action="oss_tax_action" sequence="18"/> -->
+	</data>
+</odoo>

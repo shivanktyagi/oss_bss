@@ -1,0 +1,547 @@
+<odoo>
+  <data>
+    <!-- Config lines Views-->
+    <record id="extra_config_lines_list" model="ir.ui.view">
+      <field name="name">form.extra.config.list</field>
+      <field name="model">form.extra.config.lines</field>
+      <field name="arch" type="xml">
+        <tree string="Config Lines" editable="bottom">
+          <field name="config_id"/>
+          <field name="model_id"/>
+          <field name="field_ids" widget="many2many_tags"/>
+        </tree>
+      </field>
+    </record>
+
+    <!-- Config Views-->
+    <record id="extra_config_list" model="ir.ui.view">
+      <field name="name">form.extra.config.list</field>
+      <field name="model">form.extra.config</field>
+      <field name="arch" type="xml">
+        <tree string="Config" editable="bottom">
+          <field name="name"/>
+        </tree>
+      </field>
+    </record>
+
+
+    <!-- COR SITES From Views-->
+    <record id="cor_ramp_form" model="ir.ui.view">
+      <field name="name">cloud.ramp.form</field>
+      <field name="model">cloud.ramp</field>
+      <field name="arch" type="xml">
+        <form string="CoR on Ramp">
+          <sheet>
+            <div class="oe_title">
+              <label for="name"/>
+              <h1>
+                <field name="name"/>
+              </h1>
+            </div>
+            <group>
+              <group col="2">
+                  <field name="provider_name"/>
+                  <field name="cor_city"/>
+                  <field name="cor_zip"/>
+                  <field name="cor_state"/>
+                  <field name="cor_country"/>
+                  <field name="cor_country_code"/>
+              </group>
+              <group string="Details">
+                  <field name="transit_wan_edge"/>
+                  <field name="redundency_id" widget="many2many_tags"/>
+                  <field name="site_spoc_fname"/>
+                  <field name="site_spoc_lname"/>
+                  <field name="site_spoc_phone"/>
+                  <field name="site_spoc_email"/>
+                  <field name="bandwidth"/>
+                  <field name="total_liscenses"/>
+                  <field name="location_a_end"/>
+              </group>
+            </group>
+          </sheet>
+          <div class="oe_chatter">
+              <field name="message_follower_ids"/>
+              <field name="activity_ids"/>
+              <field name="message_ids" options="{'post_refresh': 'recipients'}"/>
+          </div>
+        </form>
+      </field>
+    </record>
+
+   <!-- COR SITES Tree Views-->
+    <record id="cloud_ramp_list" model="ir.ui.view">
+      <field name="name">cloud.ramp.list</field>
+      <field name="model">cloud.ramp</field>
+      <field name="arch" type="xml">
+        <tree string="CoR on Ramp">
+          <field name="name"/>
+          <field name="provider_name"/>
+          <field name="transit_wan_edge"/>
+          <field name="total_liscenses"/>
+          <field name="location_a_end"/>
+          <field name="cor_city"/>
+          <field name="cor_state"/>
+          <field name="cor_zip"/>
+          <field name="cor_country"/>
+          <field name="redundency_id" widget="many2many_tags"/>
+        </tree>
+      </field>
+    </record>
+
+    <!-- App Modeling Views-->
+    <record id="app_modeling_form" model="ir.ui.view">
+      <field name="name">app.modeling.form</field>
+      <field name="model">app.modeling</field>
+      <field name="arch" type="xml">
+        <form string="App Modeling">
+          <sheet>
+            <div class="oe_title">
+              <label for="name"/>
+              <h1>
+                <field name="name"/>
+              </h1>
+            </div>
+            <group>
+              <group col="2">
+                  <field name="lead_id"/>
+                  <field name="application_id"/>
+                  <field name="application_hosted" widget="radio" options="{'horizontal': true}"/>
+                  <field name="ip_addr_fqdn"/>
+                  <field name="port"/>
+              </group>
+              <group string="Details">
+                  <field name="application_concurrent_users"/>
+                  <field name="per_session_bandwith"/>
+                  <field name="application_qos_parameter"/>
+                  <field name="application_priority"/>
+              </group>
+            </group>
+          </sheet>
+          <div class="oe_chatter">
+              <field name="message_follower_ids"/>
+              <field name="activity_ids"/>
+              <field name="message_ids" options="{'post_refresh': 'recipients'}"/>
+          </div>
+        </form>
+      </field>
+    </record>
+
+    <record id="app_modeling_list" model="ir.ui.view">
+      <field name="name">app.modeling.list</field>
+      <field name="model">app.modeling</field>
+      <field name="arch" type="xml">
+        <tree string="App Modeling">
+          <field name="name"/>
+          <field name="lead_id"/>
+          <field name="application_id"/>
+          <field name="application_hosted" widget="radio" options="{'horizontal': true}"/>
+          <field name="ip_addr_fqdn"/>
+          <field name="port"/>
+          <field name="application_concurrent_users"/>
+          <field name="per_session_bandwith"/>
+          <field name="application_qos_parameter"/>
+          <field name="application_priority"/>
+        </tree>
+      </field>
+    </record>
+
+    <!-- Dynamic Header Views-->
+    <record id="crm_lead_header_form" model="ir.ui.view">
+      <field name="name">crm.lead.header.form</field>
+      <field name="model">crm.lead.header</field>
+      <field name="arch" type="xml">
+        <form string="Header">
+          <sheet>
+            <field name="icon" widget="image" class="oe_avatar"/>
+            <div class="oe_title">
+              <label for="name"/>
+              <h1>
+                <field name="name"/>
+              </h1>
+            </div>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+    <record id="crm_lead_header_list" model="ir.ui.view">
+      <field name="name">crm.lead.header.list</field>
+      <field name="model">crm.lead.header</field>
+      <field name="arch" type="xml">
+        <tree string="Header">
+          <field name="name"/>
+          <field name="icon" widget="image" class="oe_avatar" options="{'size': [0, 30]}"/>
+        </tree>
+      </field>
+    </record>
+    <!-- Certainity Form -->
+    <record id="crm_certainity_form" model="ir.ui.view">
+        <field name="name">crm.certainity.form</field>
+        <field name="model">crm.certainity</field>
+        <field name="arch" type="xml">
+            <form string="Certainity">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- certainity Tree View -->
+    <record id="crm_certainity_list" model="ir.ui.view">
+        <field name="name">crm.certainity.list</field>
+        <field name="model">crm.certainity</field>
+        <field name="arch" type="xml">
+            <tree string="Certainity">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Certainity Action-->
+    <record model="ir.actions.act_window" id="crm_certainity_action_window">
+        <field name="name">Certainity</field>
+        <field name="res_model">crm.certainity</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Sidepanel Views-->
+    <record id="crm_lead_sidepanel_form" model="ir.ui.view">
+      <field name="name">crm.lead.sidepanel.form</field>
+      <field name="model">crm.lead.sidepanel</field>
+      <field name="arch" type="xml">
+        <form string="Header">
+          <sheet>
+            <div class="oe_title">
+              <label for="name"/>
+              <h1>
+                <field name="name"/>
+              </h1>
+            </div>
+            <group>
+              <group>
+                  <field name="parent_id"/>
+                  <field name="child_ids" widget="many2many_tags" invisible="1"/>
+                  <field name="icon"/>
+                  <field name="header_ids" widget="many2many_tags" attrs="{'invisible':[('parent_id','=',False)]}"/>
+                </group>
+                <group>
+                  <field name="action_id" attrs="{'invisible':[('parent_id','=',False)]}"/>
+                  <field name="model_id" readonly="1" invisible="1"/>
+                  <!-- <field name="extra_config_line_ids" widget="many2many_tags" attrs="{'invisible':[('parent_id','=',False)]}"/> -->
+                </group>
+            </group>
+            <separator string="Configurations" attrs="{'invisible':[('parent_id','=',False)]}"/>
+            <field name="extra_config_line_ids" attrs="{'invisible':[('parent_id','=',False)]}">
+                  <tree create='false'>
+                    <field name="config_id"/>
+                    <field name="model_id" readonly="1"/>
+                    <field name="field_ids" widget="many2many_tags"/>
+                  </tree>
+                </field>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+    <record id="crm_lead_sidepanel_list" model="ir.ui.view">
+      <field name="name">crm.lead.sidepanel.list</field>
+      <field name="model">crm.lead.sidepanel</field>
+      <field name="arch" type="xml">
+        <tree string="Header">
+          <field name="name"/>
+          <field name="sequence" widget="handle"/>
+          <field name="parent_id"/>
+          <field name="child_ids" widget="many2many_tags"/>
+          <field name="icon"/>
+          <field name="header_ids" widget="many2many_tags"/>
+        </tree>
+      </field>
+    </record>
+
+    <!-- Stakeholder Views-->
+    <record id="crm_lead_stakeholder_form" model="ir.ui.view">
+      <field name="name">crm.lead.stakeholders.form</field>
+      <field name="model">crm.lead.stakeholders</field>
+      <field name="arch" type="xml">
+        <form string="Stakeholders">
+          <sheet>
+            <field name="photo" widget="image" class="oe_avatar"/>
+            <div class="oe_title">
+              <label for="name"/>
+              <h1>
+                <field name="name"/>
+              </h1>
+            </div>
+            <group>
+              <group>
+                <field name="stakeholder_id" readonly="1"/>
+                <field name="lead_id"/>
+              </group>
+            </group>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+    <record id="crm_lead_stakeholder_list" model="ir.ui.view">
+      <field name="name">crm.lead.stakeholders.list</field>
+      <field name="model">crm.lead.stakeholders</field>
+      <field name="arch" type="xml">
+        <tree string="Stakeholders">
+          <field name="name"/>
+          <field name="stakeholder_id" readonly="1"/>
+          <field name="lead_id"/>
+          <field name="photo" widget="image" class="oe_avatar" options="{'size': [0, 30]}"/>
+        </tree>
+      </field>
+    </record>
+
+    <!-- Lead Tasks Views-->
+    <record id="crm_lead_tasks_form" model="ir.ui.view">
+      <field name="name">tasks</field>
+      <field name="model">crm.lead.tasks</field>
+      <field name="arch" type="xml">
+        <form>
+          <header>
+            <field name="state" widget="statusbar" options="{'clickable': '1'}"/>
+          </header>
+          <sheet>
+            <div class="oe_title oe_inline">
+              <label for="name"/>
+              <h1><field name="name" placeholder="e.g. Intro Phone Call"/></h1>
+            </div>
+            <group>
+              <group>
+                <field name="task_id" readonly="1"/>
+                <field name="assigned_to"/>
+                <field name="assigned_by"/>
+                <field name="due_date"/>
+              </group>
+              <group>
+                <field name="lead_id"/>
+                <field name="task_type" readonly="1"/>
+                <field name="create_date"/>
+                <field name="write_date"/>
+              </group>
+            </group>
+          </sheet>
+          <div class="oe_chatter">
+              <field name="message_follower_ids"/>
+              <field name="activity_ids"/>
+              <field name="message_ids" options="{'post_refresh': 'recipients'}"/>
+          </div>
+        </form>
+      </field>
+    </record>
+
+    <record id="crm_lead_tasks_list" model="ir.ui.view">
+      <field name="name">tasks</field>
+      <field name="model">crm.lead.tasks</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="task_id"/>
+          <field name="lead_id"/>
+          <field name="task_type"/>
+          <field name="due_date"/>
+        </tree>
+      </field>
+    </record>
+
+    <record id="crm_lead_tasks_search" model="ir.ui.view">
+      <field name="name">tasks</field>
+      <field name="model">crm.lead.tasks</field>
+      <field name="arch" type="xml">
+        <search>
+          <field name="task_type"/>
+          <group expand="0" string="Group By">
+            <filter string="Task Type" name="task_type" domain="[]" context="{'group_by':'task_type'}"/>
+          </group>
+        </search>
+      </field>
+    </record>
+
+    <!-- From View Security Requirement -->
+    <record id="security_requirement_form" model="ir.ui.view">
+      <field name="name">security.requirement.form</field>
+      <field name="model">security.requirement</field>
+      <field name="arch" type="xml">
+        <form string="Security Requirement">
+          <sheet>
+              <div class="oe_title">
+              <label for="name"/>
+              <h1>
+                <field name="name"/>
+              </h1>
+            </div>
+          </sheet>
+        </form>
+      </field>
+    </record>
+    <!-- Tree View  Security Requirement-->
+    <record id="security_requirement_list" model="ir.ui.view">
+      <field name="name">security.requirement.list</field>
+      <field name="model">security.requirement</field>
+      <field name="arch" type="xml">
+        <tree string="SecurityRequirement">
+          <field name="name"/>
+        </tree>
+      </field>
+    </record>
+    
+    <!--    wizard message -->
+    <record id="message_wizard_form" model="ir.ui.view">
+      <field name="name">Message wizard</field>
+      <field name="model">message.wizard</field>
+      <field name="type">form</field>
+      <field name="arch" type="xml">
+      <form string="Message">
+        <field name="message" colspan="4" nolabel="1" readonly="1" widget="html" />
+        <newline/>
+        <separator colspan="6"/>
+        <footer>
+          <button special="cancel" class="oe_highlight" string="Close" />
+        </footer>
+      </form>
+      </field>
+    </record>
+
+    <!-- Action of Security Requirement -->
+    <record model="ir.actions.act_window" id="security_requirement_action_window">
+      <field name="name">Security Requirement</field>
+      <field name="res_model">security.requirement</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Action of CoR Redundency -->
+    <record model="ir.actions.act_window" id="cor_redudency_action">
+      <field name="name">CoR Redundency</field>
+      <field name="res_model">cloud.ramp.redundency</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Lead Tasks Action-->
+    <record model="ir.actions.act_window" id="crm_lead_tasks_action">
+      <field name="name">Tasks</field>
+      <field name="res_model">crm.lead.tasks</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="crm_lead_tasks_action2">
+      <field name="name">Tasks</field>
+      <field name="res_model">crm.lead.tasks</field>
+      <field name="view_mode">tree,form</field>
+      <field name="domain">[('lead_id','=',active_id)]</field>
+      <field name="context">{'default_lead_id': active_id}</field>
+    </record>
+
+    <!-- Stakeholder Action-->
+    <record model="ir.actions.act_window" id="crm_lead_stakeholder_action">
+      <field name="name">Stakeholders</field>
+      <field name="res_model">crm.lead.stakeholders</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="crm_lead_stakeholder_action2">
+      <field name="name">Stakeholders</field>
+      <field name="res_model">crm.lead.stakeholders</field>
+      <field name="view_mode">tree,form</field>
+      <field name="domain">[('lead_id','=',active_id)]</field>
+      <field name="context">{'default_lead_id': active_id}</field>
+    </record>
+
+    <!-- Dynamic Header Action-->
+    <record model="ir.actions.act_window" id="crm_lead_header_action_window">
+      <field name="name">Headers</field>
+      <field name="res_model">crm.lead.header</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Sidepanel Action-->
+    <record model="ir.actions.act_window" id="crm_lead_sidepanel_action_window">
+      <field name="name">Sidepanel</field>
+      <field name="res_model">crm.lead.sidepanel</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Config Action-->
+    <record model="ir.actions.act_window" id="form_extra_config_action">
+      <field name="name">Form Extra Configurations</field>
+      <field name="res_model">form.extra.config</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Config Lines Action-->
+    <record model="ir.actions.act_window" id="form_extra_config_lines_action">
+      <field name="name">Extra Configuration Lines</field>
+      <field name="res_model">form.extra.config.lines</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- CoR on Ramp Action-->
+    <record model="ir.actions.act_window" id="cloud_ramp_action">
+      <field name="name">CoR on Ramp Sites</field>
+      <field name="res_model">cloud.ramp</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+    <!-- App Modeling Action-->
+    <record model="ir.actions.act_window" id="app_modeling_action">
+      <field name="name">App Modeling For Sites</field>
+      <field name="res_model">app.modeling</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Add filters in Partner View-->
+    <record id="res_partner_view_search_accounts" model="ir.ui.view">
+      <field name="name">res.partner.search.inherit</field>
+      <field name="model">res.partner</field>
+      <field name="inherit_id" ref="base.view_res_partner_filter"/>
+      <field name="arch" type="xml">
+          <xpath expr="//filter[@name='inactive']" position="before">
+            <field name="is_organisation"/>
+            <field name="is_org_contact"/>
+            <filter string="Contacts" name="contacts" domain="[('opportunity_ids','!=', False),('sale_order_ids','=', False)]"/>
+            <filter string="Accounts" name="accounts" domain="[('sale_order_ids','!=', False)]"/>
+            <separator/>
+            <filter string="Is Organisation?" name="is_organisation" domain="[('is_organisation', '=', True)]"/>
+            <filter string="Is Contact?" name="is_organisation" domain="[('is_org_contact', '=', True)]"/>
+            <group expand="0" name="group_by" string="Group By">
+              <filter name="parent_organisation_id" string="Parent Organisation" context="{'group_by': 'parent_organisation_id'}"/>
+              <filter name="organisation_id" string="Organisation ID" context="{'group_by': 'organisation_id'}"/>
+              <filter name="spoc_role" string="SPOC Role" context="{'group_by': 'spoc_role'}"/>
+            </group>
+          </xpath>
+      </field>
+    </record>
+
+
+    <!-- Menus -->
+    <menuitem name="Stakeholders" id="crm_lead_stakeholder_menu" parent="crm.crm_menu_root" action="crm_lead_stakeholder_action" sequence="11"/>
+    <menuitem name="Tasks" id="crm_lead_tasks_menu" parent="crm.crm_menu_root" action="crm_lead_tasks_action" sequence="10"/>
+    <menuitem name="Header" id="crm_lead_header_menu" parent="crm.crm_menu_config" action="crm_lead_header_action_window" sequence="1"/>
+    <menuitem name="SidePanel" id="crm_lead_sidepanel_menu" parent="crm.crm_menu_config" action="crm_lead_sidepanel_action_window" sequence="1"/>
+    <menuitem name="Config Pages" id="form_extra_config_menu" parent="crm.crm_menu_config" action="form_extra_config_action" sequence="4"/>
+    <menuitem name="Security Requirement" id="security_requirement_menu" parent="crm.crm_menu_config" action="security_requirement_action_window" sequence="1"/>
+    <menuitem name="CoR Redundency" id="cor_redudency_menu" parent="crm.crm_menu_config" action="cor_redudency_action" sequence="1"/>
+    <menuitem name="Sidepanel Page Lines" id="form_extra_config_lines_menu" parent="crm.crm_menu_config" action="form_extra_config_lines_action" sequence="4"/>
+    <menuitem name="App Modeling For Sites" id="app_modeling_menu" parent="crm.crm_menu_config" action="app_modeling_action" sequence="6"/>
+    <menuitem id="menu_lead_utm_source" action="utm.utm_source_action" parent="crm.crm_menu_config" sequence="7"/>
+    <menuitem name="CoR on Ramp" id="cloud_ramp_menu" parent="crm.crm_menu_config" action="cloud_ramp_action" sequence="8"/>
+    <menuitem name="Create Table Wizard" id="create_table_wizard_menu" parent="crm.crm_menu_config" action="create_table_dynamic_wizard_action" sequence="9"/>
+
+    <menuitem name="Certainity" id="crm_certainity_menu" parent="crm.crm_menu_config"
+              action="crm_certainity_action_window" sequence="10"/>
+
+    <!-- Hide menus -->
+    <menuitem id="sale_crm.sale_order_menu_quotations_crm" active="False"/>
+    <menuitem id="crm.crm_lead_menu_my_activities" active="False"/>
+    <menuitem id="crm.crm_menu_report" active="False"/>
+    <menuitem id="crm.crm_recurring_plan_menu_config" active="False"/>
+  </data>
+</odoo>

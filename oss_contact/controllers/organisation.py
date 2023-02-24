@@ -9,6 +9,31 @@ from odoo.http import request, Response
 import bs4
 from odoo.addons.oss_contact.controllers.contact_creation import _success_organization_200, _success_organization_error_200, _success_200
 
+Org_Contact_Header = {"name":"First Name",
+        "spoc_lname": "Last Name",
+        "email": "Email",
+        "email_enable": "Email Enable",
+        "phone_code": "Phone Code",
+        "phone": "Phone",
+        "phone_enable": "Phone Enable",
+        "preferred_type": "Preferred Type",
+        "other_medium_1": "Other Medium 1",
+        "other_phone_code1": "Other Phone Code 1",
+        "other_details_1": "Other Details 1",
+        "prefer_other_detail_1": "Prefer Other Detail 1",
+        "enable_other_1": "Enable Other 1",
+        "other_medium_2": "Other Medium 2",
+        "other_phone_code2": "Other Phone Code 2",
+        "other_details_2": "Other Details 2",
+        "prefer_other_detail_2": "Prefer Other Detail 2",
+        "enable_other_2": "Enable Other 2",
+        "spoc_role": "Role",
+        "role_details": "Role Details",
+        "other_role": "Other Role",
+        "designation": "Additional Role",
+        "comment": "Remarks",
+        }
+
 class CreateOrganisation(http.Controller):
     @http.route('/api/org_medium/dropdown', methods=["GET"], auth="none")
     def org_medium_dropdown(self, **kwargs):
@@ -42,17 +67,41 @@ class CreateOrganisation(http.Controller):
                             headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
                             content_type="application/json")
 
-    @http.route('/api/organisation/accounts/dropdown', methods=["GET"], auth="none")
-    def organisation_accounts_dropdown(self, **kwargs):
+    @http.route('/api/organisation/roles_details/dropdown', methods=["GET"], auth="none")
+    def organisation_sites_dropdown(self, **kwargs):
         try:
             params = request.params
             org_id = False
             if params.get('organisation_id') and params.get('organisation_id').isdigit():
                 org_id = int(params.get('organisation_id'))
-            org = request.env['res.partner'].sudo().browse(org_id).exists()
-            account_ids = org.bank_ids if org else request.env['res.partner.bank'].sudo().search([])
-            accounts = [{'id': account.id, 'name': account.acc_holder_name if account.acc_holder_name else ''} for account in account_ids if account.acc_holder_name]
-            return Response(json.dumps(accounts), status=200,
+            if params.get('role') and org_id:
+                org = request.env['res.partner'].sudo().browse(org_id).exists()
+                result = []
+                if params.get('role') == '2':
+                    account_ids = org.bank_ids if org else request.env['res.partner.bank'].sudo().search([])
+                    result = [{'id': account.id, 'name': account.acc_holder_name if account.acc_holder_name else ''} for account in account_ids if account.acc_holder_name]
+                elif params.get('role') == '3':
+                    site_ids = request.env['res.partner'].sudo().search([('is_site','=',True),('organisation_id','=',org.id)])
+                    result = [{'id': site.id, 'name': site.name_of_site if site.name_of_site else ''} for site in site_ids if site.name_of_site]
+                else:
+                    result = []
+                return Response(json.dumps(result), status=200,
+                        headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                        content_type="application/json")
+            else:
+                return Response(json.dumps({'message': 'Invalid Request Payload'}), status=200,
+                        headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                        content_type="application/json")
+        except Exception as e:
+            return Response(json.dumps({'message': 'Failed!!', 'reason': str(e)}), status=400,
+                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+
+    @http.route('/api/organisation/roles/dropdown', methods=["GET"], auth="none")
+    def organisation_roles_dropdown(self, **kwargs):
+        try:
+            roles = [{'id':int(obj[0]), 'name':obj[1]} for obj in request.env['res.partner'].sudo()._fields["spoc_role"].selection]
+            return Response(json.dumps(roles), status=200,
                             headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
                             content_type="application/json")
         except Exception as e:
@@ -60,24 +109,62 @@ class CreateOrganisation(http.Controller):
                             headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
                             content_type="application/json")
 
-    @http.route('/api/organisation/sites/dropdown', methods=["GET"], auth="none")
-    def organisation_sites_dropdown(self, **kwargs):
-        try:
-            params = request.params
-            org_id = False
-            if params.get('organisation_id') and params.get('organisation_id').isdigit():
-                org_id = int(params.get('organisation_id'))
-            org = request.env['res.partner'].sudo().browse(org_id).exists()
-            org_id = org_id if org_id else False
-            site_ids = request.env['res.partner'].sudo().search([('is_site','=',True),('organisation_id','=',org_id)])
-            sites = [{'id': site.id, 'name': site.name_of_site if site.name_of_site else ''} for site in site_ids if site.name_of_site]
-            return Response(json.dumps(sites), status=200,
-                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
-                            content_type="application/json")
-        except Exception as e:
-            return Response(json.dumps({'message': 'Failed!!', 'reason': str(e)}), status=400,
-                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
-                            content_type="application/json")
+    def _get_contact_table_info(self, contact_id):
+        last_name = " " +contact_id.spoc_lname if contact_id.spoc_lname else ""
+        other_details = False
+        preferred_contact_medium = False
+        if contact_id.preferred_type and contact_id.preferred_type.lower() == 'email':
+            preferred_contact_medium = 'Email'
+        elif contact_id.preferred_type and contact_id.preferred_type.lower() == 'phone':
+            preferred_contact_medium = 'Phone'
+        else:
+            preferred_contact_medium = False
+        if contact_id.other_detail_ids:
+            other_details = [{"id": cd.medium_id.id,
+                            "name":cd.medium_name,
+                            "details": cd.medium_detail,
+                            "phone_code": cd.phone_code if cd.medium_name and cd.medium_name.lower() == 'phone' else '',
+                            "enable": cd.enable,
+                            "is_preferred": cd.is_preferred_contact} for cd in contact_id.other_detail_ids]
+        remarks = False
+        role_details = []
+        if contact_id.comment:
+            remarks = bs4.BeautifulSoup(contact_id.comment,features="lxml")
+        if contact_id.spoc_role == '2':
+            account_ids = request.env['res.partner.bank'].sudo().search([('bank_spoc_id','=',contact_id.id)])
+            role_details = [{'id': account.id, 'name': account.acc_holder_name if account.acc_holder_name else ''} for account in account_ids if account.acc_holder_name]
+        if contact_id.spoc_role == '3':
+            site_ids = request.env['res.partner'].sudo().search([('email','=',contact_id.email),('mobile','=',contact_id.phone)])
+            role_details = [{'id': site.id, 'name': site.name_of_site if site.name_of_site else ''} for site in site_ids if site.name_of_site]
+        spoc_role = False
+        if contact_id.spoc_role:
+            spoc_role_id = dict(request.env['res.partner'].sudo()._fields["spoc_role"].selection)
+            spoc_role_key = list(spoc_role_id.keys())[list(spoc_role_id.keys()).index(contact_id.spoc_role)]
+            spoc_role_value = spoc_role_id[contact_id.spoc_role]
+            spoc_role = {'id':spoc_role_key, 'name':spoc_role_value}
+        vals = {
+            "contact_id": contact_id.id,
+            "first_name": contact_id.name if contact_id.name else "",
+            "last_name": contact_id.spoc_lname if contact_id.spoc_lname else "",
+            "name": contact_id.name + last_name if contact_id.name or last_name else "",
+            "organisation_name": contact_id.organisation_id.name if contact_id.organisation_id and contact_id.organisation_id.name else "",
+            "organisation_id": contact_id.organisation_id.id if contact_id.organisation_id else "",
+            "email": contact_id.email if contact_id.email else "",
+            "email_enable": contact_id.email_enable,
+            "phone_code": contact_id.phone_code if contact_id.phone_code else "",
+            "phone": contact_id.phone if contact_id.phone else "",
+            "phone_enable": contact_id.phone_enable,
+            "preferred_type": preferred_contact_medium if preferred_contact_medium else "",
+            "role": spoc_role if contact_id.spoc_role else "",
+            "other_role": contact_id.other_role if contact_id.other_role else "",
+            "additional_role": contact_id.designation if contact_id.designation else "",
+            "other_details": other_details if other_details else [],
+            "remarks": remarks.get_text() if remarks else "",
+            "image": base64.b64encode(contact_id.image_1920).decode('utf-8') if contact_id.image_1920 else '',
+            "added_on": contact_id.create_date.strftime('%d %b %Y') if contact_id.create_date else '',
+            "updated_on": contact_id.write_date.strftime('%d %b %Y') if contact_id.write_date else '',
+        }
+        return vals
 
     @http.route('/api/get_all_contact_list', methods=["GET"], auth="none")
     def get_all_contact_list(self, **kw):
@@ -86,7 +173,7 @@ class CreateOrganisation(http.Controller):
             contact_obj = request.env['res.partner'].sudo()
             domain = [('is_org_contact','=',True)]
             if params.get('search_filter'):
-                domain += [('name','ilike',params.get('search_filter'))]
+                domain += ['|',('name','ilike','%'+params.get('search_filter')+'%'),('spoc_lname','ilike','%'+params.get('search_filter')+'%')]
             limit = None
             offset = None
             if params.get('organisation_id') and params.get('organisation_id').isdigit():
@@ -95,42 +182,17 @@ class CreateOrganisation(http.Controller):
             if params.get('max_page') and params.get('max_page').isdigit() and params.get('min_page') and params.get('min_page').isdigit():
                 limit = int(params.get('max_page')) - int(params.get('min_page'))
                 offset = int(params.get('min_page'))
-            # if params.get('contact_id') and params.get('organisation_id').isdigit():
-            #     domain += [('id','=',int(params.get('contact_id')))]
             contact_ids = contact_obj.search(domain, order='id desc', limit=limit, offset=offset)
             contact_list = []
             if not contact_ids:
                 return Response(json.dumps({"total_record": contact_count, 'data': contact_list}), status = 200,
                             headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,
                             content_type = "application/json")
-            header = ["Organisation", "Employee ID", "Name", "Role", "Preferred Contact Medium", "Preferred Contact Details", "Email", "Phone"]
+            header = {"organisation_name":"Organisation","name": "Name","other_role": "Role", "email":"Email", "phone":"Phone"}
             for contact_id in contact_ids:
-                last_name = " " +contact_id.spoc_lname if contact_id.spoc_lname else ""
-                preferred_contact_medium = False
-                preferred_contact_details = False
-                if contact_id.preferred_type and contact_id.preferred_type.lower() == 'email':
-                    preferred_contact_medium = 'Email'
-                    preferred_contact_details = contact_id.email
-                elif contact_id.preferred_type and contact_id.preferred_type.lower() == 'phone':
-                    preferred_contact_medium = 'Phone'
-                    preferred_contact_details = contact_id.phone
-                else:
-                    other_id = contact_id.other_detail_ids.filtered(lambda od: od.is_preferred_contact == True)
-                    preferred_contact_medium = other_id[0].medium_name if len(other_id)>0 else False
-                    preferred_contact_details = other_id[0].medium_detail if len(other_id)>0 else False
-                vals = {
-                    "contact_id": contact_id.id,
-                    "organisation_name": contact_id.organisation_id.name if contact_id.organisation_id and contact_id.organisation_id.name else "",
-                    "organisation_id": contact_id.organisation_id.id if contact_id.organisation_id else "",
-                    "emp_id": contact_id.emp_id if contact_id.emp_id else "",
-                    "name": contact_id.name + last_name if contact_id.name or last_name else "",
-                    "role": contact_id.designation if contact_id.designation else "",
-                    "preferred_contact_medium": preferred_contact_medium if preferred_contact_medium else "",
-                    "preferred_contact_details": preferred_contact_details if preferred_contact_details else "",
-                    "email": contact_id.email if contact_id.email else "",
-                    "phone_code": contact_id.phone_code if contact_id.phone_code else "",
-                    "phone": contact_id.phone if contact_id.phone else "",
-                }
+                vals = self._get_contact_table_info(contact_id)
+                del vals['first_name']
+                del vals['last_name']
                 contact_list.append(vals)
             return Response(json.dumps({"total_record": contact_count, 'header': header, 'data': contact_list}), status = 200,headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,content_type = "application/json")
         except Exception as e:
@@ -155,39 +217,12 @@ class CreateOrganisation(http.Controller):
             if params.get('contact_id') and params.get('organisation_id').isdigit():
                 domain += [('id','=',int(params.get('contact_id')))]
             contact_id = contact_obj.search(domain, order='id desc', limit=1)
-            contact_list = []
             if not contact_id:
                 return Response(json.dumps({"message":"Contact Not Found"}), status = 200,
                             headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,
                             content_type = "application/json")
-            other_details = False
-            if contact_id.other_detail_ids:
-                other_details = [{"id": cd.medium_id.id,"name":cd.medium_name,"details": cd.medium_detail,"is_preferred":'Yes' if cd.is_preferred_contact else 'No'} for cd in contact_id.other_detail_ids]
-            remarks = False
-            if contact_id.comment:
-                remarks = bs4.BeautifulSoup(contact_id.comment,features="lxml")
-            account_ids = request.env['res.partner.bank'].sudo().search([('bank_spoc_id','=',contact_id.id)])
-            accounts = [{'id': account.id, 'name': account.acc_holder_name if account.acc_holder_name else ''} for account in account_ids if account.acc_holder_name]
-            site_ids = request.env['res.partner'].sudo().search([('email','=',contact_id.email),('mobile','=',contact_id.phone)])
-            sites = [{'id': site.id, 'name': site.name_of_site if site.name_of_site else ''} for site in site_ids if site.name_of_site]
-            vals = {
-                "contact_id": contact_id.id,
-                "first_name": contact_id.name if contact_id.name else "",
-                "last_name": contact_id.spoc_lname if contact_id.spoc_lname else "",
-                "role": contact_id.designation if contact_id.designation else "",
-                "organisation_name": contact_id.organisation_id.name if contact_id.organisation_id and contact_id.organisation_id.name else "",
-                "organisation_id": contact_id.organisation_id.id if contact_id.organisation_id else "",
-                "emp_id": contact_id.emp_id if contact_id.emp_id else "",
-                "email": contact_id.email if contact_id.email else "",
-                "phone_code": contact_id.phone_code if contact_id.phone_code else "",
-                "phone": contact_id.phone if contact_id.phone else "",
-                "other_details": other_details if other_details else "",
-                "preferred_type": contact_id.preferred_type if contact_id.preferred_type else "",
-                "remarks": remarks.get_text() if remarks else "",
-                "accounts": accounts,
-                "sites": sites,
-                "image": base64.b64encode(contact_id.image_1920).decode('utf-8') if contact_id.image_1920 else ''
-            }
+            vals = self._get_contact_table_info(contact_id)
+            del vals['name']
             return Response(json.dumps(vals), status = 200,headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,content_type = "application/json")
         except Exception as e:
             vals = {
@@ -214,8 +249,7 @@ class CreateOrganisation(http.Controller):
             data.get('billing_address').get('state_id') and \
             data.get('billing_address').get('country_id') and \
             data.get('phone_code') and data.get('spoc_phone') and \
-            data.get('spoc_first_name') and data.get('spoc_email') and \
-            data.get('phone_code') and data.get('spoc_phone')):
+            data.get('spoc_first_name') and data.get('spoc_email')):
                 return _success_organization_error_200('Invalid Request!!',{})
             res_partner_obj = request.env['res.partner'].sudo()
             res_bank_obj = request.env['res.bank'].sudo()
@@ -265,11 +299,14 @@ class CreateOrganisation(http.Controller):
                     "name": data.get("spoc_first_name"),
                     "spoc_lname": data.get("spoc_last_name"),
                     "email": data.get("spoc_email"),
-                    # "phone_code": data.get("spoc_phone_code"),
                     "phone": data.get("spoc_phone"),
-                    "is_org_contact": True
+                    "is_org_contact": True,
+                    "phone_code": data.get("phone_code")
                 }
                 org_spoc_id = res_partner_obj.create(spoc_vals)
+            org_acc_no = [anum.get('account_number') for anum in data.get('account_details')]
+            if request.env['res.partner.bank'].sudo().search([('sanitized_acc_number','in',org_acc_no)]):
+                return _success_organization_error_200("Account Number Already Exist! :",{})
             for rec in data.get('account_details'):
                 if not (rec.get('account_number') and rec.get('account_name') and rec.get('bank_name') and
                         rec.get('bank_first_name') and rec.get('bank_email') and rec.get('phone_code') and
@@ -283,8 +320,6 @@ class CreateOrganisation(http.Controller):
                     is_valid_bank_country_id = request.env['res.country'].sudo().browse(rec.get('bank_address').get('country_id')).exists()
                     if not is_valid_bank_country_id:
                         return _success_organization_error_200("Country ID For Bank Addresss Does Not Exists!!",{})
-                if request.env['res.partner.bank'].sudo().search([('sanitized_acc_number','=',rec.get('account_number'))]):
-                    return _success_organization_error_200("Account Number Already Exist! :",{})
                 bank_obj_rec = res_bank_obj.search([('name', '=', rec.get('bank_name'))], limit=1)
                 if not bank_obj_rec:
                     bank_vals = {
@@ -305,9 +340,8 @@ class CreateOrganisation(http.Controller):
                     spoc_vals={
                     "name": rec.get('bank_first_name'),
                     "spoc_lname": rec.get('bank_last_name') if rec.get('bank_last_name') else '',
-                    # "name": rec.get('bank_first_name') +  rec.get('bank_last_name') if rec.get('bank_last_name') else rec.get('bank_first_name'),
                     "email": rec.get('bank_email'),
-                    # "bank_phone_code": rec.get('phone_code'),
+                    "phone_code": rec.get('phone_code'),
                     "phone": rec.get('bank_phone'),
                     "is_bank_spoc": True,
                     "is_org_contact": True,
@@ -333,10 +367,7 @@ class CreateOrganisation(http.Controller):
     @http.route('/api/organisation_generate_excel_file', csrf=False, methods=["GET"], auth='none')
     def organisation_generate_excel_file(self, **kwargs):
         try:
-            header = ["First Name", "Last Name", "Role", "Employee ID", "Preferred Type", "Email", "Phone",
-            "Other Medium 1", "Other Details 1", "Prefer Other Detail 1", "Other Medium 2",
-            "Other Details 2", "Prefer Other Detail 2", "Org SPOC", "Bank SPOC", "Accounts", "Site SPOC",
-            "Sites","Remarks"]
+            header = list(Org_Contact_Header.values())
             return Response(json.dumps({'success': True, 'status': 'Success', 'header': header}), status=200,
                 headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
                 content_type="application/json")
@@ -345,86 +376,52 @@ class CreateOrganisation(http.Controller):
                             headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
                             content_type="application/json")
 
-    @http.route('/api/org_contact/update', type="json", methods=["POST"], auth="none")
-    def update_contact(self, **kw):
-        data = request.jsonrequest
-        contact_id = data.get('contact_id')
-        try:
-            contact = request.env['res.partner'].sudo().search([('id', '=', contact_id), ('is_org_contact', '=', True)],
-                                                               limit=1)
-            if not contact:
-                return _success_organization_error_200("Contact Id Not Found", {})
-            value = []
-            other_detail_ids = request.env['contact.other.detail'].sudo()
-            if data.get('organisation_id') != contact.organisation_id.id:
-                return _success_organization_error_200("Organisation ID cannot be Updated. ", {})
-            if data.get('other_details'):
-                for rec in data.get('other_details'):
-                    medium_id = request.env['utm.medium'].sudo().browse(rec.get('medium_id')).exists()
-                    if not medium_id:
-                        return _success_organization_error_200("Contact Other Details Id Not Exist ", {})
-                    old_other_id = other_detail_ids.search(
-                        ['|', ('medium_id', '=', medium_id.id), ('medium_detail', '=', rec.get('medium_detail'))])
-                    if not old_other_id:
-                        other_id = other_detail_ids.create(
-                            {"medium_id": medium_id.id, "medium_detail": rec.get('medium_detail'), "is_preferred_contact": rec.get("is_preferred_contact")})
-                        value.append(other_id.id)
-                    else:
-                        old_other_id.medium_id = medium_id.id
-                        old_other_id.medium_detail = rec.get('medium_detail')
-                        old_other_id.is_preferred_contact = rec.get("is_preferred_contact")
-            if data.get('is_org_spoc').upper() == 'YES':
-                org_contact_obj = request.env['res.partner'].sudo().search(
-                    [('is_org_contact', '=', True), ('organisation_id', '=', int(data.get('organisation_id')))])
-                for org_contact in org_contact_obj:
-                    if org_contact.is_org_spoc:
-                        return _success_organization_error_200("Another Contact exist as Org SPOC for this organisation. Remove them as SPOC to set this contact as the New SPOC.",{})
-            if data.get('preferred_type') and (data.get('other_details')):
-                for rec in data.get('other_details'):
-                    if rec.get('is_preferred_contact').upper() == 'YES':
-                        return _success_organization_error_200("Only one communication type can be set as Preferred", {})
-            if data.get('is_bank_spoc').upper() == 'YES':
-                for rec in data.get('accounts'):
-                    account_id = request.env['res.partner.bank'].sudo().browse(rec).exists()
-                    if account_id:
-                        account_id.bank_spoc_id = contact.id
-            if data.get('is_site_spoc').upper() == 'YES':
-                for rec in data.get('sites'):
-                    site_id = request.env['res.partner'].sudo().search([('id', '=', rec), ('is_site', '=', True)]).exists()
-                    if site_id:
-                        vals = {
-                            'name': contact.name,
-                            'spoc_lname': contact.spoc_lname,
-                            'email': contact.email,
-                            'phone_code': contact.phone_code,
-                            'phone': contact.phone
-                        }
-                        site_id.write(vals)
-            try:
-                vals = {
-                    'name': data.get('first_name') if data.get('first_name') else contact.name,
-                    'spoc_lname': data.get('last_name') if data.get('last_name') else contact.spoc_lname,
-                    'organisation_id': data.get('organisation_id') if data.get(
-                        'organisation_id') else contact.organisation_id,
-                    'designation': data.get('role') if data.get('role') else contact.designation,
-                    'emp_id': data.get('emp_id') if data.get('emp_id') else contact.emp_id,
-                    'phone_code': data.get('phone_code') if data.get('phone_code') else contact.phone_code,
-                    'phone': data.get('phone') if data.get('phone') else contact.phone,
-                    'email': data.get('email') if data.get('email') else contact.email,
-                    "preferred_type": data.get('preferred_type') if data.get('preferred_type') else contact.preferred_type,
-                    'is_org_spoc': True if data.get('is_org_spoc').upper() == 'YES' else False,
-                    'is_bank_spoc': True if data.get('is_bank_spoc').upper() == 'YES' else False,
-                    'is_site_spoc': True if data.get('is_site_spoc').upper() == 'YES' else False,
-                    'other_detail_ids': [(4, v) for v in value] if value else contact.other_detail_ids.ids,
-                    'comment': data.get('remarks') if data.get('remarks') else contact.comment
-                }
-                contact.sudo().write(vals)
-                return _success_organization_200('Contact Details Successfully Updated.', {})
-            except Exception as e:
-                return _success_organization_error_200("Contact Details Not Updated." + str(e), {})
-        except Exception as e:
-            return _success_organization_error_200("Invalid request payload. " + str(e), {})
+    def _update_previous_spoc_details(self, role, other_role, contact):
+        if contact.spoc_role in [1,'1'] and role not in [1,'1']:
+            contact.organisation_id.spoc_id = False
+        elif contact.spoc_role in [2,'2'] and role not in [2,'2']:
+            accounts = contact.organisation_id.bank_ids.filtered(lambda obj: obj.bank_spoc_id.id == contact.id)
+            accounts.sudo().write({'bank_spoc_id':False})
+        elif contact.spoc_role in [3,'3'] and role not in [3,'3']:
+            sites = request.env['res.partner'].sudo().search([('spoc_id', '=', contact.id), ('is_site', '=', True),('organisation_id','=',contact.organisation_id.id)])
+            sites.sudo().write({
+                    'spoc_lname': False,
+                    'email': False,
+                    'phone_code': False,
+                    'mobile': False,
+                    'spoc_id':False})
+        else:
+            contact.other_role = False
 
+    def _create_spoc_details(self, role, role_details,other_role, contact):
+        self._update_previous_spoc_details(role,other_role,contact)
+        if role in [2, '2']:
+            accounts = request.env['res.partner.bank'].sudo().browse(role_details).exists()
+            if accounts:
+                accounts.sudo().write({'bank_spoc_id': contact.id})
+            contact.spoc_role = '2'
+            contact.other_role = False
+        elif role in [3,'3']:
+            sites = request.env['res.partner'].sudo().search([('id', 'in', role_details), ('is_site', '=', True)])
+            if sites:
+                sites.sudo().write(
+                    {'name': contact.name,
+                    'spoc_lname': contact.spoc_lname if contact.spoc_lname else '',
+                    'email': contact.email,
+                    'phone_code': contact.phone_code,
+                    'mobile': contact.phone,
+                    'spoc_id': contact.id
+                    })
+            contact.spoc_role = '3'
+            contact.other_role = False
+        elif role == 1:
+            contact.spoc_role = '1'
+            contact.organisation_id.spoc_id = contact.id
+            contact.other_role = False
+        else:
+            contact.other_role = other_role
+            contact.spoc_role = '4'
+    
     @http.route('/api/org_contact/create', auth='none', type="json", methods=['POST'])
     def org_contact_create(self, **kwargs):
         try:
@@ -441,64 +438,100 @@ class CreateOrganisation(http.Controller):
                 ['|', ('phone', '=', data.get('phone')), ('email', '=', data.get('email'))], limit=1)
             if org_spoc_id:
                 return _success_organization_error_200("Contact Already Exists!!", {})
-            if data.get('is_org_spoc').upper() == 'YES':
+            if data.get('role') == 1 or data.get('role') == '1':
                 org_contact_obj = request.env['res.partner'].sudo().search(
-                    [('is_org_contact', '=', True), ('organisation_id', '=', org_obj.id)])
-                for org_contact in org_contact_obj:
-                    if org_contact.is_org_spoc:
-                        return _success_organization_error_200("Another Contact exist as Org SPOC for this organisation. Remove them as SPOC to set this contact as the New SPOC.", {})
+                    [('is_org_contact', '=', True), ('organisation_id', '=', org_obj.id),('spoc_role','=','1')])
+                if org_contact_obj:
+                    return _success_organization_error_200("Another Contact exist as Org SPOC for this organisation. Remove them as SPOC to set this contact as the New SPOC.", {})
             if data.get('preferred_type') and (data.get('other_details')):
                 for rec in data.get('other_details'):
-                    if rec.get('is_preferred_contact').upper() == 'YES':
+                    if rec.get('is_preferred_contact'):
                         return _success_organization_error_200("Only one communication type can be set as Preferred",{})
             vals = {
                 'name': data.get('first_name'),
                 'spoc_lname': data.get('last_name') if data.get('last_name') else False,
                 'organisation_id': org_obj.id,
-                'emp_id': data.get('emp_id'),
-                'designation': data.get('role'),
                 'email': data.get('email'),
+                "email_enable": data.get('email_enable') if data.get('email_enable') else False,
                 'phone_code': data.get('phone_code') if data.get('phone_code') else False,
                 'phone': data.get('phone'),
+                "phone_enable": data.get('phone_enable') if data.get('phone_enable') else False,
                 'preferred_type': data.get('preferred_type') if data.get('preferred_type') else False,
-                'is_org_spoc': True if data.get('is_org_spoc').lower() == 'yes' else False,
-                'is_bank_spoc': True if data.get('is_bank_spoc').lower() == 'yes' else False,
-                'is_site_spoc': True if data.get('is_site_spoc').lower() == 'yes' else False,
                 'comment': data.get('remark') if data.get('remark') else False,
                 'property_stock_customer': False,
                 'property_stock_supplier': False,
-                'is_org_contact': True
+                'is_org_contact': True,
+                'designation': data.get('additional_role') if data.get('additional_role') else False
             }
             res_partner_obj = request.env['res.partner'].sudo().create(vals)
-            if data.get('is_bank_spoc').lower() == 'yes':
-                if data.get('accounts'):
-                    for bank_acc in data.get('accounts'):
-                        accounts = request.env['res.partner.bank'].sudo().browse(bank_acc).exists()
-                        if accounts:
-                            accounts.sudo().write({'bank_spoc_id': res_partner_obj.id})
-            if data.get('is_site_spoc').lower() == 'yes':
-                if data.get('sites'):
-                    for site_id in data.get('sites'):
-                        sites = request.env['res.partner'].sudo().search([('id', '=', site_id), ('is_site', '=', True)],limit=1)
-                        if sites:
-                            sites.sudo().write(
-                                {'name': data.get('first_name'),
-                                 'spoc_lname': data.get('last_name') if data.get('last_name') else '',
-                                 'email': data.get('email'),
-                                 'mobile': data.get('phone')
-                                 })
+            self._create_spoc_details(data.get('role'),data.get('role_details'),data.get('other_role'),res_partner_obj)
             if data.get('other_details'):
+                medium_id_obj = request.env['utm.medium'].sudo()
                 for rec in data.get('other_details'):
-                    if rec.get('is_preferred_contact').upper() == 'YES':
-                        rec['is_preferred_contact'] = True
-                    else:
-                        rec['is_preferred_contact'] = False
+                    rec['is_preferred_contact'] = rec.get('is_preferred_contact') if rec.get('is_preferred_contact') else False
+                    rec['enable'] = rec.get('enable') if rec.get('enable') else False
+                    other_details_phone_medium_id = medium_id_obj.browse(rec.get('medium_id')).exists()
+                    if other_details_phone_medium_id and other_details_phone_medium_id.name.upper() != 'PHONE':
+                        rec['phone_code'] = False
                     create_other_details = request.env['contact.other.detail'].sudo().create(rec)
                     other_medium_ids.append(create_other_details.id)
             res_partner_obj.other_detail_ids = [(6, 0, other_medium_ids)]
             return _success_organization_200("Contact Created Successfully !!", {'id': res_partner_obj.id})
         except Exception as e:
             return _success_organization_error_200("Failed :" + str(e), {})
+    
+    @http.route('/api/org_contact/update', type="json", methods=["POST"], auth="none")
+    def update_contact(self, **kw):
+        data = request.jsonrequest
+        contact_id = data.get('contact_id')
+        try:
+            contact = request.env['res.partner'].sudo().search([('id', '=', contact_id), ('is_org_contact', '=', True)],limit=1)
+            if not contact:
+                return _success_organization_error_200("Contact Id Not Found", {})
+            other_detail_ids = request.env['contact.other.detail'].sudo()
+            if data.get('organisation_id') != contact.organisation_id.id:
+                return _success_organization_error_200("Organisation ID cannot be Updated. ", {})
+            if data.get('preferred_type') and (data.get('other_details')):
+                for rec in data.get('other_details'):
+                    if rec.get('is_preferred_contact'):
+                        return _success_organization_error_200("Only one communication type can be set as Preferred", {})
+            if data.get('other_details'):
+                for cid in contact.other_detail_ids.ids:
+                    contact.other_detail_ids = [(2,cid)]
+                for rec in data.get('other_details'):
+                    medium_id = request.env['utm.medium'].sudo().browse(rec.get('medium_id')).exists()
+                    if not medium_id:
+                        return _success_organization_error_200("Contact Other Details Id Not Exist ", {})
+                    other_vals = {"medium_id": medium_id.id, "medium_detail": rec.get('medium_detail'), 
+                    "is_preferred_contact": rec.get("is_preferred_contact"),'enable':rec.get('enable')}
+                    if medium_id.name.lower() == 'phone':
+                        other_vals['phone_code'] = rec.get('phone_code')
+                    other_id = other_detail_ids.create(other_vals)
+                    contact.other_detail_ids = [(4,other_id.id)]
+            if data.get('role') == 'org_spoc' and contact.organisation_id.spoc_id.id != contact.id:
+                return _success_organization_error_200("Another Contact exist as Org SPOC for this organisation. Remove them as SPOC to set this contact as the New SPOC.",{})
+            try:
+                vals = {
+                    'name': data.get('first_name') if data.get('first_name') else contact.name,
+                    'spoc_lname': data.get('last_name') if data.get('last_name') else contact.spoc_lname,
+                    'organisation_id': data.get('organisation_id') if data.get(
+                        'organisation_id') else contact.organisation_id,
+                    'phone_code': data.get('phone_code') if data.get('phone_code') else contact.phone_code,
+                    'phone': data.get('phone') if data.get('phone') else contact.phone,
+                    "phone_enable": data.get('phone_enable') if data.get('phone_enable') else False,
+                    'email': data.get('email') if data.get('email') else contact.email,
+                    "email_enable": data.get('email_enable') if data.get('email_enable') else False,
+                    "preferred_type": data.get('preferred_type'),
+                    'comment': data.get('remarks') if data.get('remarks') else contact.comment,
+                    'designation': data.get('additional_role')
+                }
+                contact.sudo().write(vals)
+                self._create_spoc_details(data.get('role'),data.get('role_details'),data.get('other_role'),contact)
+                return _success_organization_200('Contact Details Successfully Updated.', {})
+            except Exception as e:
+                return _success_organization_error_200("Contact Details Not Updated." + str(e), {})
+        except Exception as e:
+            return _success_organization_error_200("Invalid request payload. " + str(e), {})
 
     @http.route('/api/organisation_count', methods=["GET"], auth='none')
     def get_organisation_count(self, **kw):
@@ -566,28 +599,41 @@ class CreateOrganisation(http.Controller):
 
 
     def _validate_contact_data(self, data):
-        REQUIRED_HEADER = ['name','designation','email','phone']
-        is_preferred_contact1 = True if data.get('prefer_other_detail_1') and data.get('prefer_other_detail_1').lower() == 'yes' else False
-        is_preferred_contact2 = True if data.get('prefer_other_detail_2') and data.get('prefer_other_detail_2').lower() == 'yes' else False
+        REQUIRED_HEADER = ['name','email','phone','spoc_role','role_details']
+        is_preferred_contact1 = True if data.get('prefer_other_detail_1') and data.get('prefer_other_detail_1').lower() == 'true' else False
+        is_preferred_contact2 = True if data.get('prefer_other_detail_2') and data.get('prefer_other_detail_2').lower() == 'true' else False
         for i in REQUIRED_HEADER:
             if not data.get(i):
                 return {'status': False, "result": data, "reason": "Required field: '" + i + "' data missing."}
         if data.get('phone') and not data.get('phone').isnumeric():
-            return {'status': False, "result": data, "reason": "Required field: '" + i + "' must be numbers and not string."}
+            return {'status': False, "result": data, "reason": "Required field: 'Phone' must be numbers and not string."}
+        field_list = ['spoc_role']
+        partner_obj = request.env['res.partner'].sudo()
+        for i in field_list:
+            if data.get(i) and data.get(i) not in list(dict(partner_obj._fields[i].selection).values()):
+                return {'status': False, "result": data, "reason": "Invalid Selection value: " + i}
+        for sl in field_list:
+            if data.get(sl) and data.get(sl) in dict(partner_obj._fields[sl].selection).values():
+                fl = dict(partner_obj._fields[sl].selection)
+                data[sl] = list(fl.keys())[list(fl.values()).index(data.get(sl))]
         other_details = []
         medium_obj = request.env['utm.medium'].sudo()
-        if data.get('preferred_contact_medium') and data.get('preferred_contact_details'):
-            preferred_contact_medium = medium_obj.search([('name','=',data.get('preferred_contact_medium'))],limit=1)
-            if not preferred_contact_medium:
-                return {'status': False, "result": data, "reason": "'Preferred Contact Medium' Not Found."}
+        if data.get('preferred_type'):
+            preferred_type = medium_obj.search([('name','=',data.get('preferred_type'))],limit=1)
+            if not preferred_type:
+                return {'status': False, "result": data, "reason": "'Preferred Type' Not Found."}
             else:
-                data['preferred_contact_medium'] = preferred_contact_medium.id
-        elif data.get('preferred_contact_medium') and not data.get('preferred_contact_details'):
-            return {'status': False, "result": data, "reason": "'Preferred Contact Detail' is required with 'Preferred Contact Medium'."}
+                data['preferred_type'] = preferred_type.id
         if data.get('other_medium_1') and data.get('other_details_1'):
             other_medium_id1 = medium_obj.search([('name','=',data.get('other_medium_1'))],limit=1)
+            other_phone_code1 = data.get('other_phone_code1') if data.get('other_medium_1').lower() == 'phone' else False
             if other_medium_id1:
-                other_details1 = request.env['contact.other.detail'].sudo().create({'medium_id':other_medium_id1.id, 'medium_detail': data.get('other_details_1'),'is_preferred_contact':is_preferred_contact1})
+                other_details1 = request.env['contact.other.detail'].sudo().create(
+                    {'medium_id':other_medium_id1.id, 
+                    'medium_detail': data.get('other_details_1'),
+                    'phone_code': other_phone_code1,
+                    'enable': True if data.get('enable_other_1') and data.get('enable_other_1').lower() == 'true' else False,
+                    'is_preferred_contact':is_preferred_contact1})
                 other_details.append(other_details1.id)
             else:
                 return {'status': False, "result": data, "reason": "'Other Medium 1' Not Found."}
@@ -595,47 +641,29 @@ class CreateOrganisation(http.Controller):
             return {'status': False, "result": data, "reason": "'Other Detail 1' is required with 'Other Medium 1'."}
         if data.get('other_medium_2') and data.get('other_details_2'):
             other_medium_id2 = medium_obj.search([('name','=',data.get('other_medium_2'))],limit=1)
+            other_phone_code2 = data.get('other_phone_code2') if data.get('other_medium_2').lower() == 'phone' else False
             if other_medium_id2:
-                other_details2 = request.env['contact.other.detail'].sudo().create({'medium_id':other_medium_id2.id, 'medium_detail': data.get('other_details_2'),'is_preferred_contact':is_preferred_contact2})
+                other_details2 = request.env['contact.other.detail'].sudo().create(
+                    {'medium_id':other_medium_id2.id, 
+                    'medium_detail': data.get('other_details_2'),
+                    'phone_code': other_phone_code2,
+                    'enable': True if data.get('enable_other_2') and data.get('enable_other_2').lower() == 'true' else False,
+                    'is_preferred_contact':is_preferred_contact2})
                 other_details.append(other_details2.id)
             else:
                 return {'status': False, "result": data, "reason": "'Other Medium 2' Not Found."}
         elif data.get('preferred_type') and (is_preferred_contact1 or is_preferred_contact2):
             return {'status': False, "result": data, "reason": "Only one communication type can be set as Preferred"}
         data['other_detail_ids'] = [(6,0,other_details)]
-        del data['other_medium_1']
-        del data['other_details_1']
-        del data['other_medium_2']
-        del data['other_details_2']
-        del data['prefer_other_detail_1']
-        del data['prefer_other_detail_2']
-        data['is_org_spoc'] = True if data.get('is_org_spoc') and data.get('is_org_spoc').lower() == 'yes' else False
-        data['is_bank_spoc'] = True if data.get('is_bank_spoc') and data.get('is_bank_spoc').lower == 'yes' else False
-        data['is_site_spoc'] = True if data.get('is_site_spoc') and data.get('is_site_spoc').lower() == 'yes' else False
+        for i in ['other_medium_1','other_phone_code1', 'other_details_1', 'other_medium_2', 'other_phone_code2', 'other_details_2', 'prefer_other_detail_1', 'prefer_other_detail_2', 'enable_other_1', 'enable_other_2']:
+            del data[i]
+        data['email_enable'] = True if data.get('email_enable') and data.get('email_enable').lower() == 'true' else False
+        data['phone_enable'] = True if data.get('phone_enable') and data.get('phone_enable').lower() == 'true' else False
         return {'status': True, "result": data}
 
 
     def upload_org_contact(self, header_list, data_list, org_obj):
-        header = {"name":"First Name",
-                "spoc_lname": "Last Name",
-                "designation": "Role",
-                "emp_id": "Employee ID",
-                "preferred_type": "Preferred Type",
-                "email": "Email",
-                "phone": "Phone",
-                "other_medium_1": "Other Medium 1",
-                "other_details_1": "Other Details 1",
-                "prefer_other_detail_1": "Prefer Other Detail 1",
-                "other_medium_2": "Other Medium 2",
-                "other_details_2": "Other Details 2",
-                "prefer_other_detail_2": "Prefer Other Detail 2",
-                "is_org_spoc": "Org SPOC",
-                "is_bank_spoc": "Bank SPOC",
-                "accounts": "Accounts",
-                "is_site_spoc": "Site SPOC",
-                "sites": "Sites",
-                "comment": "Remarks",
-                }
+        header = Org_Contact_Header
         success = []
         fail = []
         if all(i in header.values() for i in header_list):
@@ -644,29 +672,23 @@ class CreateOrganisation(http.Controller):
             for i in range(0, len(data_list)):
                 data = dict(zip(header, data_list[i]))
                 data['organisation_id'] = org_obj.id
-                site_ids = eval(data['sites']) if data.get('sites') else False
-                bank_ids = eval(data['accounts']) if data.get('accounts') else False
+                role_details = eval(data['role_details']) if data.get('role_details') else False
                 success_data = data.copy()
                 fail_data = data.copy()
                 res = self._validate_contact_data(data)
-                del data['accounts']
-                del data['sites']
+                del data['role_details']
                 if res.get('status'):
                     try:
                         result = res.get('result')
                         result['is_org_contact'] = True
+                        result['phone_code'] = result['phone_code']
                         result['property_stock_customer'] = False
                         result['property_stock_supplier'] = False
                         c_name = request.env['res.partner'].sudo().search([('organisation_id', '=', org_obj.id),'|',('email','=',result['email']),('phone','=',result['phone'])])
                         if not c_name:
                             contact_id = request.env['res.partner'].sudo().create(result)
                             success_data['contact_id'] = contact_id.id
-                            if bank_ids:
-                                accounts = request.env['res.partner.bank'].sudo().browse(bank_ids)
-                                accounts.sudo().write({'bank_spoc_id':contact_id.id})
-                            if site_ids:
-                                sites = request.env['res.partner'].sudo().search([('is_site','=',True),('id','in',site_ids)])
-                                sites.sudo().write({'name':contact_id.name,'spoc_lname':contact_id.spoc_lname,'email':contact_id.email,'mobile':contact_id.phone})
+                            self._create_spoc_details(result['spoc_role'], role_details,result['other_role'], contact_id)
                             success.append(success_data)
                         else:
                             fail_data['reason'] = "Contact Name already exists!!"
@@ -700,7 +722,7 @@ class CreateOrganisation(http.Controller):
             file_extension = file.filename.split('.')[-1]
             if file_extension not in ['xls','xlsx']:
                 return Response(json.dumps("Only XLS or XLSX File extension allowed"), status = 200,headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,content_type = "application/json")
-            else:
+            else:	
                 xls_data = file.read()
                 rows = self._read_xls(xls_data)[1]
                 res = self.upload_org_contact(rows[0], rows[1:], org_obj)
@@ -716,24 +738,415 @@ class CreateOrganisation(http.Controller):
             return Response(json.dumps("Invalid request payload"), status = 200,headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,content_type = "application/json")
 
     def _validate_customer(self, org_ids):
-        lead_ids = request.env['crm.lead'].sudo().search([('partner_id', 'in', org_ids.ids)])
-        customers = len(lead_ids.filtered(lambda obj: obj.type == 'opportunity'))
-        return {'customers': customers, 'non_customers': len(org_ids)-customers}
+        lead_obj = request.env['crm.lead'].sudo()
+        customers = [org.id for org in org_ids if lead_obj.search([('partner_id', '=', org.id)])]
+        return customers
 
     @http.route('/api/organisation_type_count', methods=["GET"], auth='none')
     def get_organisation_type_count(self):
         try:
             org_ids = request.env['res.partner'].sudo().search([('is_organisation', '=', True)])
-            res = self._validate_customer(org_ids)
+            customers = self._validate_customer(org_ids)
+            non_customers = len(org_ids)-len(customers) if len(org_ids) > len(customers) else 0
             result={
                 'all_organisation': len(org_ids),
-                'customers': res.get('customers'),
-                'non_customers': res.get('non_customers'),
+                'customers': len(customers),
+                'non_customers': non_customers,
             }
-            return Response(json.dumps(result), status=200,
+            return Response(json.dumps({'message': 'success', 'resData': result, "status": True}), status=200,
                             headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
                             content_type="application/json")
         except Exception as e:
-            return Response(json.dumps({'message': 'Failed!!', 'reason': str(e)}), status=400,
+            return Response(json.dumps({'message': 'Failed', 'resData': str(e), "status": False}), status=400,
+                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+
+    def get_org_onboarding_status(self, org_id):
+        return 'Onboarded' if len(org_id.bank_ids)>0 else 'Not Onboarded'
+
+    def related_organisation_data(self, org_ids, org_type=False):
+        org_list = []
+        lead_ids = request.env['crm.lead'].sudo().search([('partner_id', 'in', org_ids.ids)])
+        customer_ids = lead_ids.mapped('partner_id')
+        if org_type and org_type.lower() == 'customer':
+            org_ids = customer_ids
+        elif org_type and org_type.lower() == 'non customer':
+            org_ids = org_ids.filtered(lambda od: od.id not in customer_ids.ids) if customer_ids else org_ids
+        for org_id in org_ids:
+            onboarding = self.get_org_onboarding_status(org_id)
+            org_type = self._validate_customer(org_id)
+            vals = {"organisation_id": org_id.id,
+                    "organisation_name": org_id.name if org_id.name else "",
+                    "type": 'Customer' if org_type and org_type[0] == org_id.id  else 'Non Customer',
+                    "industry": org_id.industry_id.name if org_id.industry_id else "",
+                    "onboarding": onboarding,
+                    "related_orgs": len(org_ids.filtered(lambda obj:obj.parent_organisation_id.id == org_id.id)),
+                    "products": len(lead_ids.filtered(lambda obj:obj.partner_id.id == org_id.id).mapped('product_ids')),
+                    "org_spoc": org_id.spoc_id.name if org_id.spoc_id else "",
+                    "email": org_id.email if org_id.email else "",
+                    "phone": org_id.phone if org_id.phone else "",
+                    "is_parent_organisation": True if any(l.parent_organisation_id.id == org_id.id for l in org_ids) else False,
+                    "parent_id": org_id.parent_organisation_id.id if org_id.parent_organisation_id else "",
+                }
+            org_list.append(vals)
+        return org_list
+
+    @http.route('/api/all_organisation_list', methods=["GET"], auth="none")
+    def all_organisation_list(self, **kw):
+        try:
+            params = request.params
+            org_obj = request.env['res.partner'].sudo()
+            domain = [('is_organisation', '=', True)]
+            header = ["Organisation Name", "Type", "Industry", "Onboarding", "Related Orgs",
+                    "Products", "Org SPOC", "Email", "Phone"]
+            limit = None
+            offset = None
+            if params.get('search_filter'):
+                domain += [('name', 'ilike', '%'+params.get('search_filter')+'%')]
+            total_org = org_obj.search_count(domain)
+            if params.get('max_page') and params.get('max_page').isdigit() and params.get('min_page') and params.get(
+                    'min_page').isdigit():
+                limit = int(params.get('max_page')) - int(params.get('min_page'))
+                offset = int(params.get('min_page'))
+            org_ids = org_obj.search(domain, order='id desc', limit=limit, offset=offset)
+            if params.get('organisation_type') and params.get('organisation_type').lower() not in ['customer','non customer']:
+                return Response(json.dumps({'message': 'Failed', 'resData': "Invalid Organisation Type!", "status": False}),
+                status=200, headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                content_type="application/json")
+            org_data = self.related_organisation_data(org_ids, params.get('organisation_type'))
+            return Response(json.dumps({'message': 'success', "total_record": total_org, 'header': header, 'resData': org_data, "status": True}),
+                            status=200,
+                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+        except Exception as e:
+            return Response(json.dumps({'message': 'Failed', 'resData': str(e), "status": False}), status=400,
+                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+
+    @http.route('/api/org/basic_information', methods=["GET"], auth="none")
+    def _org_basic_information(self, **kw):
+        try:
+            params = request.params
+            org_obj = request.env['res.partner'].sudo()
+            organization = False
+            if params.get('organisation_id') and params.get('organisation_id').isnumeric():
+                organization = org_obj.search([('is_organisation','=',True),('id','=',params.get('organisation_id'))])
+            else:
+                return Response(json.dumps({'message': 'Failed', 'resData': "Organisation ID not found!", "status": False}), status = 200,
+                headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,
+                content_type = "application/json")
+            if not organization:
+                return Response(json.dumps({'message': 'Failed', 'resData': "Organisation not found!", "status": False}), status = 200,
+                            headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,
+                            content_type = "application/json")
+            parent_org_id = organization.parent_organisation_id
+            parent_org_data = {}
+            related_data = []
+            if parent_org_id:
+                parent_org_data["id"] = parent_org_id.id
+                parent_org_data["name"] = parent_org_id.name
+            parent_organization = request.env['res.partner'].sudo().search(
+                [('parent_organisation_id', '=', parent_org_id.id), ('is_organisation', '=', True)])
+            for rec in parent_organization:
+                related_data.append({"id": rec.id, "name": rec.name})
+            address = ""
+            if organization.street: address = address + organization.street
+            if organization.street2: address = address + ", " + organization.street2
+            if organization.city: address = address + ", " + organization.city
+            if organization.state_id: address = address + ", " + organization.state_id.name
+            if organization.country_id: address = address + ", " + organization.country_id.name
+            if organization.zip: address = address + ", " + organization.zip
+            organization_data = {
+                "organization_id": organization.id if organization else '',
+                "organization_name": organization.name if organization.name else '',
+                "parent_organization": parent_org_data or "",
+                "related_organization": related_data,
+                "registration_number": organization.registration_no if organization.registration_no else '',
+                "industry_type": organization.industry_id.name if organization.industry_id else '',
+                "description": bs4.BeautifulSoup(organization.comment, features="lxml").get_text() if organization.comment else '',
+                "address": address,
+                "spoc_id": organization.spoc_id.id if organization.spoc_id else '',
+                "spoc_name": organization.spoc_id.name if organization.spoc_id.name else '',
+                "spoc_email": organization.spoc_id.email if organization.spoc_id.email else '',
+                "spoc_phone_code": organization.spoc_id.phone_code if organization.spoc_id.phone_code else '',
+                "spoc_phone": organization.spoc_id.phone if organization.spoc_id.phone else '',
+                "preferred_type": organization.spoc_id.preferred_type if organization.spoc_id.preferred_type else ''
+            }
+            return Response(json.dumps({'message': 'success', 'resData': organization_data, "status": True}),
+                            status=200,
+                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+        except Exception as e:
+            return Response(json.dumps({'message': 'Failed', 'resData': str(e), "status": False}), status=400,
+                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+
+    def _get_billing_address(self, organisation_obj):
+        billing_address = False
+        if organisation_obj:
+            billing_address = {
+                "street": organisation_obj.invoice_address_1 if organisation_obj.invoice_address_1 else '',
+                "street2": organisation_obj.invoice_address_2 if organisation_obj.invoice_address_2 else '',
+                "zip": organisation_obj.invoice_zip if organisation_obj.invoice_zip else '',
+                "city": organisation_obj.invoice_city if organisation_obj.invoice_city else '',
+                "state": {'id': organisation_obj.invoice_state_id.id,
+                        'name': organisation_obj.invoice_state_id.name if organisation_obj.invoice_state_id.name else ''},
+                "country": {'id': organisation_obj.invoice_country_id.id,
+                            'name': organisation_obj.invoice_country_id.name if organisation_obj.invoice_country_id.name else ''}
+            }
+        return billing_address
+
+    def _get_bank_info(self, organisation_obj):
+        bank_account_info = False
+        if organisation_obj:
+            bank_account_info = []
+            for rec in organisation_obj.bank_ids:
+                bank_vals = {
+                    'id': rec.id,
+                    'account_name': rec.acc_holder_name if rec.acc_holder_name else '',
+                    'account_number': rec.acc_number if rec.acc_number else '',
+                    'bank': {'id': rec.bank_id.id, 'name': rec.bank_id.name if rec.bank_id.name else ''},
+                    'ifsc_code': rec.bank_id.bic if rec.bank_id.bic else '',
+                    'bank_spoc_id': rec.bank_spoc_id.id,
+                    'bank_spoc_name': (
+                        rec.bank_spoc_id.name + " " + rec.bank_spoc_id.spoc_lname if rec.bank_spoc_id.spoc_lname else rec.bank_spoc_id.name),
+                    'email': rec.bank_spoc_id.email if rec.bank_spoc_id.email else '',
+                    'phone_code': rec.bank_spoc_id.phone_code if rec.bank_spoc_id.phone_code else '',
+                    'phone': rec.bank_spoc_id.phone if rec.bank_spoc_id.phone else '',
+                }
+                bank_account_info.append(bank_vals)
+        return bank_account_info
+
+    @http.route('/api/org/billing_details', methods=["GET"], auth="none")
+    def api_org_billing_details(self, **kw):
+        try:
+            params = request.params
+            org_obj = request.env['res.partner'].sudo()
+            org_id = False
+            if params.get('organisation_id') and params.get('organisation_id').isnumeric():
+                org_id = org_obj.search([('is_organisation','=',True),('id','=',params.get('organisation_id'))])
+            else:
+                return Response(json.dumps({'message': 'Failed', 'resData': "Organisation ID not found!", "status": False},
+                    default=str), status=200,
+                    headers={"Content-Type": "application/json","Access-Control-Allow-Origin": '*'},
+                    content_type="application/json")
+            if not org_id:
+                return Response(json.dumps({'message': 'Failed', 'resData': "Organisation ID not found!", "status": False}), status = 200,
+                            headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,
+                            content_type = "application/json")
+            result = {'billing_address': self._get_billing_address(org_id), 'account_details': self._get_bank_info(org_id)}
+            return Response(json.dumps({'message': 'success', 'resData': result, "status": True}),
+                            status=200,
+                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+        except Exception as e:
+            return Response(json.dumps({'message': 'Failed', 'resData': str(e), "status": False}, default=str),
+                            status=400,
+                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+
+    @http.route('/api/org/get_contact_list', methods=["GET"], auth='none')
+    def api_org_get_contact_list(self, **kwargs):
+        try:
+            data = request.params.copy()
+            contact_obj = request.env['res.partner'].sudo()
+            if not data.get('organisation_id'):
+                return Response(json.dumps({'message': 'Failed', 'resData': "Organisation ID not found", "status": False},
+                               default=str), status=200,
+                    headers={"Content-Type": "application/json",
+                             "Access-Control-Allow-Origin": '*'},
+                    content_type="application/json")
+            requested_data = []
+            org_obj = contact_obj.search([('is_organisation', '=', True), ('id', '=', data.get('organisation_id'))], limit=1)
+            if not org_obj:
+                return Response(json.dumps({'message': 'Failed', 'resData': "Organisation ID does not exist!","status": False},default=str), status=200,
+                    headers={"Content-Type": "application/json",
+                             "Access-Control-Allow-Origin": '*'},
+                    content_type="application/json")
+            cnt_ids = org_obj.org_contact_ids
+            if data.get('search_filter'):
+                cnt_ids = cnt_ids.search([('is_org_contact', '=', True),('organisation_id','=',org_obj.id),'|',('name','ilike','%'+data.get('search_filter')+'%'),('spoc_lname','ilike','%'+data.get('search_filter')+'%')])
+            if cnt_ids:
+                for org_contact_id in cnt_ids:
+                    vals = {
+                        'contact_id': org_contact_id.id,
+                        'name': org_contact_id.name + " "+ org_contact_id.spoc_lname if org_contact_id.spoc_lname else org_contact_id.name,
+                        'role': org_contact_id.designation if org_contact_id.designation else '',
+                        'is_spoc':True,
+                        'preferred_contact': org_contact_id.preferred_type if org_contact_id.preferred_type else '',
+                        'preferred_contact_detail': "",
+                    }
+                    if org_contact_id.preferred_type and org_contact_id.preferred_type.upper() == 'PHONE':
+                        phone_code = org_contact_id.phone_code + ' ' if org_contact_id.phone_code else ''
+                        vals['preferred_contact_detail'] = phone_code +org_contact_id.phone if org_contact_id.phone else ''
+                    elif org_contact_id.preferred_type and org_contact_id.preferred_type.upper() == 'EMAIL':
+                        vals['preferred_contact_detail'] = org_contact_id.email if org_contact_id.email else ''
+                    else:
+                        other_preferred_id = org_contact_id.other_detail_ids.filtered(lambda obj: obj.is_preferred_contact == True)
+                        if other_preferred_id:
+                            vals['preferred_contact'] = other_preferred_id[0].medium_id.name
+                            vals['preferred_contact_detail'] = other_preferred_id[0].medium_detail if other_preferred_id.medium_detail else ''
+                    requested_data.append(vals)
+            return Response(json.dumps({'message': 'success', 'resData': requested_data, "status": True}), status=200,
+                            headers={"Content-Type": "application/json",
+                                     "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+        except Exception as e:
+            return Response(json.dumps({'message': 'Failed', 'resData': str(e), "status": False}, default=str),
+                            status=400,
+                            headers={"Content-Type": "application/json",
+                                     "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+
+
+    @http.route('/api/org/product_details', methods=["GET"], auth="none")
+    def _get_org_product_details(self, **kw):
+        try:
+            params = request.params
+            org_obj = request.env['res.partner'].sudo()
+            organization = False
+            if params.get('organisation_id') and params.get('organisation_id').isnumeric():
+                organization = org_obj.search([('is_organisation','=',True),('id','=',params.get('organisation_id'))])
+            else:
+                return Response(json.dumps({'message': 'fail', 'resData': "Invalid Request Payload", 'status': False}), status = 200,
+                headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,
+                content_type = "application/json")
+            if not organization:
+                return Response(json.dumps({'message': 'fail', 'resData': "Organisation Not Found", 'status': False}), status = 200,
+                            headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,
+                            content_type = "application/json")
+            requested_data = {}
+            data_list = []
+            crm_lead_obj = request.env['crm.lead'].sudo().search([('partner_id', '=', organization.id)])
+            for lead in crm_lead_obj:
+                vals = {}
+                technical_requirements = []
+                vals['product_name'] = lead.product_ids.name if lead.product_ids else ''
+                vals['product_varient'] = 'Best Effort'
+                vals['physical_sites'] = lead.no_of_sites if lead.no_of_sites else ''
+                vals['cloud_sites'] = lead.no_of_cor_sites if lead.no_of_cor_sites else ''
+                if lead.security_requirement_ids:
+                    for rec in lead.security_requirement_ids:
+                        technical_requirement_vals = {
+                            'name': rec.name if rec.name else '',
+                        }
+                        technical_requirements.append(technical_requirement_vals)
+                vals['technical_requirements'] = technical_requirements
+                vals['redundancy'] =  'No Redundancy'
+                data_list.append(vals)
+            requested_data['product_list'] = data_list
+            return Response(json.dumps({'message': 'success', 'resData': requested_data, 'status': True}), status=200,
+                            headers={"Content-Type": "application/json",
+                                     "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+        except Exception as e:
+            return Response(json.dumps({'message': 'Failed', 'resData': str(e), "status": False}, default=str), status=400,
+                            headers={"Content-Type": "application/json",
+                                     "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+
+    @http.route('/api/org/all_product_list', methods=["GET"], auth="none")
+    def _get_org_all_product_list(self, **kw):
+        try:
+            params = request.params
+            org_obj = request.env['res.partner'].sudo()
+            organization = False
+            if params.get('organisation_id') and params.get('organisation_id').isnumeric():
+                organization = org_obj.search([('is_organisation','=',True),('id','=',params.get('organisation_id'))])
+            else:
+                return Response(json.dumps({'message': 'Failed', 'resData': "Organisation ID Not Found", 'status': False}), status = 200,
+                headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,
+                content_type = "application/json")
+            if not organization:
+                return Response(json.dumps({'message': 'Failed', 'resData': "Organisation Not Found", 'status': False}), status = 200,
+                            headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,
+                            content_type = "application/json")
+            products_list = [{'id': ld.product_ids.id, 'name': ld.product_ids.name} for ld in request.env['crm.lead'].sudo().search([('partner_id', '=', organization.id),('product_ids','!=',False)])]
+            return Response(json.dumps({'message': 'success', 'resData': products_list, 'status': True}),
+                            status=200,
+                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+        except Exception as e:
+            return Response(json.dumps({'message': 'Failed', 'resData': str(e), "status": False}), status=400,
+                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+
+    @http.route('/api/org/sales_request', methods=["GET"], auth='none')
+    def api_org_sales_requests(self, **kwargs):
+        try:
+            params = request.params
+            org_obj = request.env['res.partner'].sudo()
+            organization = False
+            if params.get('organisation_id') and params.get('organisation_id').isnumeric():
+                organization = org_obj.search([('is_organisation','=',True),('id','=',params.get('organisation_id'))])
+            else:
+                return Response(json.dumps({'message': 'fail', 'resData': "Organisation ID Not Found", "status": False}), status = 200,
+                headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,
+                content_type = "application/json")
+            if not organization:
+                return Response(json.dumps({'message': 'fail', 'resData': "Organisation Not Found", "status": False}), status = 200,
+                            headers = {"Content-Type":"application/json","Access-Control-Allow-Origin":'*'} ,
+                            content_type = "application/json")
+            sales_vals = []
+            lead_ids = request.env['crm.lead'].sudo().search([('partner_id', '=', organization.id)])
+            for lead_obj in lead_ids:
+                vals = {
+                    "sales_req_id": lead_obj.id,
+                    "status": "New Opportunity" if lead_obj.stage_id.name == 'New Enquiry' or lead_obj.stage_id.name == 'New' else "Service Upgrade",
+                    "product": lead_obj.product_ids[0].name if len(lead_obj.product_ids)>0 else "",
+                    "received": lead_obj.create_date.strftime('%d %b %Y') if lead_obj.create_date else '',
+                    'updated': lead_obj.write_date.strftime('%d %b %Y') if lead_obj.write_date else '',
+                    'kam': '',
+                    'is_qualified': True if lead_obj.stage_id.name == 'Qualified Develop' or lead_obj.type == 'opportunity' else False
+                }
+                sales_vals.append(vals)
+            return Response(json.dumps({'message': 'success', 'resData': sales_vals, "status": True}),
+                            status=200,
+                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+        except Exception as e:
+            return Response(json.dumps({'message': 'Failed', 'resData': str(e), "status": False}), status=400,
+                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'})
+
+    @http.route('/api/get_organisation_list', methods=["GET"], auth="none")
+    def get_organisation_list(self, **kw):
+        try:
+            params = request.params
+            org_obj = request.env['res.partner'].sudo()
+            domain = [('is_organisation', '=', True)]
+            header = ['Name', 'Type', 'Onboarding', 'Related Orgs', 'Products', 'YOY Revenue',
+                    'CSAT Score', 'Lifetime Value', 'Pending POs', 'Open Requests']
+            limit = None
+            offset = None
+            if params.get('search_filter'):
+                domain += [('name', 'ilike','%'+params.get('search_filter')+'%')]
+            total_org = org_obj.search_count(domain)
+            if params.get('max_page') and params.get('max_page').isdigit() and params.get('min_page') and params.get(
+                    'min_page').isdigit():
+                limit = int(params.get('max_page')) - int(params.get('min_page'))
+                offset = int(params.get('min_page'))
+            org_ids = org_obj.search(domain, order='id desc', limit=limit, offset=offset)
+            org_data = self.related_organisation_data(org_ids, params.get('organisation_type'))
+            requested_data = []
+            for partner in org_data:
+                vals = {}
+                vals['organisation_id'] = partner.get('organisation_id')
+                vals['organisation_name'] = partner.get('organisation_name')
+                vals['type'] = partner.get('type')
+                vals['onboarding_status'] = partner.get('onboarding')
+                vals['related_org'] = partner.get('related_orgs')
+                vals['products'] = partner.get('products')
+                vals['yoy_revenue'] = 0
+                vals['csat_score'] = 0
+                vals['lifetime_value'] = 0
+                vals['pending_pos'] = 0
+                vals['open_req'] = {'change_req':0,'cancel_req':0,'terminate_req':0,'service_req':0,'sales_req':partner.get('products')}
+                requested_data.append(vals)
+            return Response(json.dumps({'message': 'success', 'total_org':total_org, 'resData': requested_data, "status": True}),
+                            status=200,
+                            headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
+                            content_type="application/json")
+        except Exception as e:
+            return Response(json.dumps({'message': 'Failed', 'resData': str(e), "status": False}), status=400,
                             headers={"Content-Type": "application/json", "Access-Control-Allow-Origin": '*'},
                             content_type="application/json")

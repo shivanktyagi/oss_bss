@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data noupdate="1">
+
+        <!--SOURCE DEMO DATA -->
+        <record model="utm.source" id="utm_portal_enquiry">
+        <field name="name">Portal Enquiry</field>
+        </record>
+        <record model="utm.source" id="utm_cross_sales">
+            <field name="name">Cross Sales</field>
+        </record>
+        <record model="utm.source" id="utm_direct">
+            <field name="name">Direct</field>
+        </record>
+
+        <!--COUNTRY DEMO DATA -->
+        <record id="country_group_sita_sa" model="res.country.group">
+            <field name="name">SITA_SA</field>
+            <field name="country_ids" eval="[(6,0, [ref('base.za'), ref('base.in')])]"/>
+        </record>
+
+        <!--CRM STAGE DEMO DATA -->
+
+        <record id="crm_stage_demo_new_enquiry" model="crm.stage">
+            <field name="name">New Enquiry</field>
+            <field name="is_lead">lead</field>
+            <field name="default_stage">True</field>
+            <field name="sequence">1</field>
+        </record>
+        <record id="crm_stage_demo_req_capturing" model="crm.stage">
+            <field name="name">Req. Capturing</field>
+            <field name="is_lead">lead</field>
+            <field name="sequence">2</field>
+        </record>
+        <record id="crm_stage_demo_feasibility_check" model="crm.stage">
+            <field name="name">Feasibility Check</field>
+            <field name="is_lead">lead</field>
+            <field name="feasibility_stage">True</field>
+            <field name="sequence">3</field>
+        </record>
+        <record id="crm_stage_demo_qualified_disqualified" model="crm.stage">
+            <field name="name">Qualified/Disqualified</field>
+            <field name="is_lead">lead</field>
+            <field name="sequence">4</field>
+        </record>
+        <record id="crm_stage_demo_qualified_develop" model="crm.stage">
+            <field name="name">Qualified Develop</field>
+            <field name="is_lead">opportunity</field>
+            <field name="sequence">5</field>
+        </record>
+        <record id="crm_stage_demo_under_development" model="crm.stage">
+            <field name="name">Under Development</field>
+            <field name="is_lead">opportunity</field>
+            <field name="default_stage">True</field>
+            <field name="sequence">6</field>
+        </record>
+        <record id="crm_stage_demo_under_discussion" model="crm.stage">
+            <field name="name">Under Discussion</field>
+            <field name="is_lead">opportunity</field>
+            <field name="sequence">7</field>
+        </record>
+        <record id="crm_stage_demo_opp_won_lost" model="crm.stage">
+            <field name="name">Opp. Won/Lost</field>
+            <field name="is_lead">opportunity</field>
+            <field name="sequence">8</field>
+        </record>
+
+        <record id="partner_dummy_user" model="res.partner">    
+            <field name="name">Dummy Organization</field>    
+            <field name="company_name">In2IT Technologies</field>    
+            <field name="street">Special Economic Zone (SEZ)</field>    
+            <field name="street2">SPlot No. 21, Sector - Techzone IV</field>    
+            <field name="city">Greater Noida West</field>    
+            <field name="state_id" model="res.country.state" search="[('code','ilike','Uttar Pradesh')]"/>    
+            <field name="zip">201306</field>
+            <field name="country_id" ref='base.in'/>    
+            <field name="email">info@in2ittech.com</field>    
+            <field name="phone">8954685994</field>    
+            <field name="mobile">8954685994</field>    
+            <field name="website">https://www.in2ittech.com</field>    
+            <field name="is_contact">true</field>    
+            <field name="spoc_name">Dummy</field>
+            <field name="spoc_lname">User</field>    
+            <field name="company_type">company</field>
+        </record>
+    </data>
+</odoo>

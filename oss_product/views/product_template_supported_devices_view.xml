@@ -1,0 +1,822 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="product_template_supported_devices_form" model="ir.ui.view">
+        <field name="name">Supported Devices</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_variant_id']" position="after">
+                <field name="is_devices" invisible="1"/>
+                <field name="is_product_offering" invisible="1"/>
+                <field name="is_cpe_models" invisible="1"/>
+            </xpath>
+            <xpath expr="//page[@name='general_information']" position="after">
+                <page name="supported_devices" string="Supported Devices" attrs="{'invisible':[('is_devices','=',True)]}">
+                    <group>
+                        <field name="supported_devices_ids" domain="[('is_devices', '=', True)]"  
+                            widget="many2many_tags" options="{'color_field': 'color'}"
+                            placeholder="Adding to Supported Devices"/>
+                        <field name="product_features_ids" widget="many2many_tags" options="{'color_field': 'color'}" placeholder="Adding to features "/>
+                    </group>
+                </page>
+            </xpath>
+
+            <xpath expr="//field[@name='categ_id']" position="after">
+                <field name="oem_model_id" attrs="{'invisible':[('is_cpe_models','=',False)]}"/>
+            </xpath>
+
+            <xpath expr="//page[@name='sales']" position="attributes">
+                <attribute name="attrs">{'invisible':[('is_product_offering','=',True)]}
+                </attribute>
+            </xpath>
+            <xpath expr="//page[@name='inventory']" position="attributes">
+                <attribute name="attrs">{'invisible':[('is_product_offering','=',True)]}
+                </attribute>
+            </xpath>
+            <xpath expr="//page[@name='purchase']" position="attributes">
+                <attribute name="attrs">{'invisible':[('is_product_offering','=',True)]}
+                </attribute>
+            </xpath>
+            <xpath expr="//page[@name='invoicing']" position="attributes">
+                <attribute name="attrs">{'invisible':[('is_product_offering','=',True)]}
+                </attribute>
+            </xpath>
+            <xpath expr="//page[@name='supported_devices']" position="attributes">
+                <attribute name="attrs">{'invisible':[('is_product_offering','=',True)]}
+                </attribute>
+            </xpath>
+
+            <xpath expr="//page[@name='general_information']" position="after">
+                <page name="extra_info" string="Package Information" attrs="{'invisible':[('is_product_offering','=',False)]}">
+                    <group>
+                        <field name="product_package"/>
+                        <field name="last_mile"/>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <record id="view_product_features_form" model="ir.ui.view">
+        <field name="name">product.features.form</field>
+        <field name="model">product.features</field>
+        <field name="priority" eval="1"/>
+        <field name="arch" type="xml">
+            <form string="Product Features">
+                <sheet>
+                    <field name="image_1920" widget="image" class="oe_avatar" nolabel="1"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_product_features_tree" model="ir.ui.view">
+        <field name="name">product.features.tree</field>
+        <field name="model">product.features</field>
+        <field name="priority" eval="1"/>
+        <field name="arch" type="xml">
+            <tree string="Product Features">
+                <field name="name"/>
+                <field name="description"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="product_features_action" model="ir.actions.act_window">
+        <field name="name">Products Features</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.features</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No product features found. Let's create one!
+            </p>
+        </field>
+    </record>
+
+    <record id="action_product_features_view_tree" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_product_features_tree"/>
+        <field name="act_window_id" ref="product_features_action"/>
+    </record>
+
+    <record id="action_product_features_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_product_features_form"/>
+        <field name="act_window_id" ref="product_features_action"/>
+    </record>
+
+    <menuitem id="product_features_menu" name="Product Features" 
+        action="product_features_action"
+        parent="stock.menu_stock_inventory_control" sequence="2"/>
+
+    <record id="product_cpe_models_action" model="ir.actions.act_window">
+        <field name="name">CPE Models</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('is_cpe_models','=',True)]</field>
+        <field name="context">
+            {'default_is_cpe_models':True,'default_is_devices': False}
+        </field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No product CPE models found. Let's create one!
+            </p>
+        </field>
+    </record>
+
+
+
+    <menuitem id="product_cpe_models_menu" name="CPE Models" 
+        action="product_cpe_models_action"
+        parent="stock.menu_stock_inventory_control"/>
+
+    <!-- Product Offering -->
+    <record id="product_offering_action" model="ir.actions.act_window">
+        <field name="name">Product Offering</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('is_product_offering','=',True)]</field>
+        <field name="context">
+            {'default_is_product_offering':True,'default_is_site': False}
+        </field>
+
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No product Offering found. Let's create one!
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="product_offering_menu" name="Product Offering" 
+        action="product_offering_action"
+        parent="stock.menu_stock_inventory_control"/>
+
+
+
+    <record id="ip_address_type_form_view" model="ir.ui.view">
+        <field name="name">ip.address.type.form</field>
+        <field name="model">ip.address.type</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="ip_address_type_list_view" model="ir.ui.view">
+        <field name="name">ip.address.type.list</field>
+        <field name="model">ip.address.type</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="IP Address Type">
+                <field name="name" string="Address Type"/>
+            </tree>
+        </field>
+    </record>
+    <record id="ip_address_type_action_form" model="ir.actions.act_window">
+        <field name="name">IP Address Types</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">ip.address.type</field>
+        <field name="view_id" ref="ip_address_type_list_view"/>
+    </record>
+
+    <menuitem id="menu_ip_address_type" 
+        action="ip_address_type_action_form"
+        parent ="stock.menu_product_in_config_stock" sequence="6"/>
+
+
+    <record id="ip_address_form_view" model="ir.ui.view">
+        <field name="name">ip.address.form</field>
+        <field name="model">ip.address</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="ip_address_list_view" model="ir.ui.view">
+        <field name="name">ip.address.type.list</field>
+        <field name="model">ip.address</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="IP Address">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="ip_address_action_form" model="ir.actions.act_window">
+        <field name="name">IP Address</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">ip.address</field>
+        <field name="view_id" ref="ip_address_list_view"/>
+    </record>
+
+    <menuitem id="menu_ip_address" 
+        action="ip_address_action_form"
+        parent ="stock.menu_product_in_config_stock" sequence="7"/>
+
+    <record id="cpe_type_form_view" model="ir.ui.view">
+        <field name="name">cpe.type.form</field>
+        <field name="model">cpe.type</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="cpe_type_list_view" model="ir.ui.view">
+        <field name="name">cpe.type.list</field>
+        <field name="model">cpe.type</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="CPE TYPE">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="cpe_type_action_form" model="ir.actions.act_window">
+        <field name="name">CPE Types</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">cpe.type</field>
+        <field name="view_id" ref="cpe_type_list_view"/>
+    </record>
+
+    <menuitem id="menu_cpe_type" 
+        action="cpe_type_action_form"
+        parent ="stock.menu_product_in_config_stock" sequence="8"/>
+
+    <record id="routing_protocol_form_view" model="ir.ui.view">
+        <field name="name">routing.protocol.form</field>
+        <field name="model">routing.protocol</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="routing_protocol_list_view" model="ir.ui.view">
+        <field name="name">routing.protocol.list</field>
+        <field name="model">routing.protocol</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="Routing Protocol">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="routing_protocol_action_form" model="ir.actions.act_window">
+        <field name="name">Routing Protocol</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">routing.protocol</field>
+        <field name="view_id" ref="routing_protocol_list_view"/>
+    </record>
+
+    <menuitem id="menu_routing_protocol" 
+        action="routing_protocol_action_form"
+        parent ="stock.menu_product_in_config_stock" sequence="9"/>
+
+    <record id="ip_sec_tunnel_form_view" model="ir.ui.view">
+        <field name="name">ip.sec.tunnel.form</field>
+        <field name="model">ip.sec.tunnel</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="is_url_filtering" widget="radio"  options="{'horizontal': true}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="ip_sec_tunnel_list_view" model="ir.ui.view">
+        <field name="name">ip.sec.tunnel.list</field>
+        <field name="model">ip.sec.tunnel</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="Routing Protocol">
+                <field name="name"/>
+                <field name="is_url_filtering"/>
+            </tree>
+        </field>
+    </record>
+    <record id="ip_sec_tunnel_action_form" model="ir.actions.act_window">
+        <field name="name">Ip Sec. Tunnel</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">ip.sec.tunnel</field>
+        <field name="view_id" ref="ip_sec_tunnel_list_view"/>
+    </record>
+
+    <menuitem id="menu_ip_sec_tunnel" 
+        action="ip_sec_tunnel_action_form"
+        parent ="stock.menu_product_in_config_stock" sequence="10"/>
+
+    <record id="transport_link_type_form_view" model="ir.ui.view">
+        <field name="name">transport.link.type.form</field>
+        <field name="model">transport.link.type</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="transport_link_type_list_view" model="ir.ui.view">
+        <field name="name">transport.link.type.list</field>
+        <field name="model">transport.link.type</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="Transport Link Type">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="transport_link_type_action_form" model="ir.actions.act_window">
+        <field name="name">Transport Link Type</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">transport.link.type</field>
+        <field name="view_id" ref="transport_link_type_list_view"/>
+    </record>
+
+    <menuitem id="menu_transport_link_type" 
+        action="transport_link_type_action_form"
+        parent ="stock.menu_product_in_config_stock" sequence="9"/>
+
+    <!-- Media Type -->
+    <record id="media_type_form_view" model="ir.ui.view">
+        <field name="name">media.type.form</field>
+        <field name="model">media.type</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="media_type_list_view" model="ir.ui.view">
+        <field name="name">media.type.list</field>
+        <field name="model">media.type</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="Media Type">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="media_type_action_form" model="ir.actions.act_window">
+        <field name="name">Media Type</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">media.type</field>
+        <field name="view_id" ref="media_type_list_view"/>
+    </record>
+
+
+    <menuitem id="menu_media_type" 
+        action="media_type_action_form"
+        parent ="stock.menu_product_in_config_stock" sequence="11"/>
+
+    <!-- Product Brands -->
+    <record id="product_brands_form_view" model="ir.ui.view">
+        <field name="name">product.brands.form</field>
+        <field name="model">product.brands</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <field name="brand_logo" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Brands Name/OEM Models eg. Huawei"/>
+                        </h1>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="product_brands_list_view" model="ir.ui.view">
+        <field name="name">product.brands.list</field>
+        <field name="model">product.brands</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="Product Brands">
+                <field name="name"/>
+                <field name="brand_logo" widget="image" class="oe_avatar" options="{'size': [0, 30]}"/>
+            </tree>
+        </field>
+    </record>
+    <record id="product_brands_action_form" model="ir.actions.act_window">
+        <field name="name">Product Brands/OEM Models</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.brands</field>
+        <field name="view_id" ref="product_brands_list_view"/>
+    </record>
+
+
+    <menuitem id="menu_product_brands" 
+        action="product_brands_action_form"
+        parent ="stock.menu_product_in_config_stock" sequence="12"/>
+
+
+
+    <!-- Security Service -->
+    <record id="security_service_form_view" model="ir.ui.view">
+        <field name="name">security.service.form</field>
+        <field name="model">security.service</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <group col="4">
+                        <field name="name"/>
+                        <field name="is_malware_protecion" widget="radio" options="{'horizontal': true}"/>
+                        <field name="is_url_filtering" widget="radio" options="{'horizontal': true}"/>
+                        <field name="is_intrusion_prevention" widget="radio" options="{'horizontal': true}"/>
+                        <field name="is_local_attack_defence" widget="radio" options="{'horizontal': true}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="security_service_list_view" model="ir.ui.view">
+        <field name="name">security.service.list</field>
+        <field name="model">security.service</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="Security Service">
+                <field name="name"/>
+                <field name="is_malware_protecion"/>
+                <field name="is_url_filtering"/>
+                <field name="is_intrusion_prevention"/>
+                <field name="is_local_attack_defence"/>
+            </tree>
+        </field>
+    </record>
+    <record id="security_service_action_form" model="ir.actions.act_window">
+        <field name="name">Security Service</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">security.service</field>
+        <field name="view_id" ref="security_service_list_view"/>
+    </record>
+
+    <menuitem id="menu_security_service" 
+        action="security_service_action_form"
+        parent ="stock.menu_stock_inventory_control" sequence="4"/>
+
+    <!-- Resource Specification -->
+    <record id="resource_specification_form_view" model="ir.ui.view">
+        <field name="name">resource.specification.form</field>
+        <field name="model">resource.specification</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <group col="4">
+                        <field name="name"/>
+                        <field name="customer_permise_router_id"/>
+                        <field name="router_target"/>
+                        <field name="fec"/>
+                        <field name="ip_address"/>
+                        <field name="ip_address_type"/>
+                        <field name="auth_profile"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="resource_specification_list_view" model="ir.ui.view">
+        <field name="name">resource.specification.list</field>
+        <field name="model">resource.specification</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="Resource Specification">
+                <field name="name"/>
+                <field name="customer_permise_router_id"/>
+                <field name="router_target"/>
+                <field name="fec"/>
+                <field name="ip_address_type"/>
+                <field name="ip_address"/>
+            </tree>
+        </field>
+    </record>
+    <record id="resource_specification_action_form" model="ir.actions.act_window">
+        <field name="name">Resource Specification</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">resource.specification</field>
+        <field name="view_id" ref="resource_specification_list_view"/>
+    </record>
+
+    <menuitem id="menu_resource_specification" 
+        action="resource_specification_action_form"
+        parent ="stock.menu_stock_inventory_control" sequence="5"/>
+
+
+    <!-- Service Specification -->
+    <record id="service_specification_form_view" model="ir.ui.view">
+        <field name="name">service.specification.form</field>
+        <field name="model">service.specification</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <group col="4">
+                        <field name="name"/>
+                        <field name="tp_configuration"/>
+                        <field name="routing_configuration"/>
+                        <field name="product_optimization_service"/>
+                        <field name="duplication_compression"/>
+                        <field name="security_service"/>
+                        <field name="ip_sec_tunnel"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="service_specification_list_view" model="ir.ui.view">
+        <field name="name">service.specification.list</field>
+        <field name="model">service.specification</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="Service Specification">
+                <field name="name"/>
+                <field name="tp_configuration"/>
+                <field name="routing_configuration"/>
+                <field name="product_optimization_service"/>
+                <field name="duplication_compression"/>
+                <field name="security_service"/>
+                <field name="ip_sec_tunnel"/>
+            </tree>
+        </field>
+    </record>
+    <record id="service_specification_action_form" model="ir.actions.act_window">
+        <field name="name">Service Specification</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">service.specification</field>
+        <field name="view_id" ref="service_specification_list_view"/>
+    </record>
+
+    <menuitem id="menu_service_specification" 
+        action="service_specification_action_form"
+        parent ="stock.menu_stock_inventory_control" sequence="6"/>
+
+
+    <!-- Product Devices -->
+    <record id="product_devices_form_view" model="ir.ui.view">
+        <field name="name">product.devices.form</field>
+        <field name="model">product.devices</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <group col="4">
+                        <field name="name"/>
+                        <field name="tp_type"/>
+                        <field name="cpe_type"/>
+                        <field name="cpe_model">
+                            <tree string="Models" editable="bottom">
+                                <field name="name" string="CPE Model" placeholder="Select CPE Model"/>
+                            </tree>
+                        </field>
+                        <field name="routing"/>
+                        <field name="optimization"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="product_devices_list_view" model="ir.ui.view">
+        <field name="name">product.devices.list</field>
+        <field name="model">product.devices</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="Devices">
+                <field name="name"/>
+                <field name="tp_type"/>
+                <field name="cpe_type"/>
+                <field name="cpe_model" widget="many2many_tags"/>
+                <field name="routing"/>
+            </tree>
+        </field>
+    </record>
+    <record id="product_devices_action_form" model="ir.actions.act_window">
+        <field name="name">Devices</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.devices</field>
+        <field name="view_id" ref="product_devices_list_view"/>
+    </record>
+
+    <menuitem id="menu_product_devices" 
+        action="product_devices_action_form"
+        parent ="stock.menu_stock_inventory_control" sequence="7"/>
+
+    <!-- Product Specification-->
+    <record id="product_specification_form_view" model="ir.ui.view">
+        <field name="name">product.specification.form</field>
+        <field name="model">product.specification</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <group col="4">
+                        <field name="name"/>
+                        <field name="device">
+                            <tree string="Devices" editable="bottom">
+                                <field name="name" string="Devices" placeholder="Select Devices"/>
+                            </tree>
+                        </field>
+                        <field name="security">
+                            <tree string="Security" editable="bottom">
+                                <field name="name" string="Security" placeholder="Select Security"/>
+                            </tree>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="product_specification_list_view" model="ir.ui.view">
+        <field name="name">product.specification.list</field>
+        <field name="model">product.specification</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="Product Specification">
+                <field name="name"/>
+                <field name="device"/>
+                <field name="security"/>
+            </tree>
+        </field>
+    </record>
+    <record id="product_specification_action_form" model="ir.actions.act_window">
+        <field name="name">Product Specification</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.specification</field>
+        <field name="view_id" ref="product_specification_list_view"/>
+    </record>
+
+    <menuitem id="menu_product_specification" 
+        action="product_specification_action_form"
+        parent ="stock.menu_stock_inventory_control" sequence="8"/>
+
+    <!-- Product Package-->
+    <record id="product_package_form_view" model="ir.ui.view">
+        <field name="name">product.package.form</field>
+        <field name="model">product.package</field>
+        <field name="arch" type="xml">
+            <form class="oe_form_configuration">
+                <sheet>
+                    <group col="4">
+                        <field name="name"/>
+                        <field name="product_specification">
+                            <tree string="Product Specification" editable="bottom">
+                                <field name="name" string="Product Specification"/>
+                            </tree>
+                        </field>
+                        <field name="service_specification">
+                            <tree string="Service Specification" editable="bottom">
+                                <field name="name" string="Service Specification"/>
+                            </tree>
+                        </field>
+                        <field name="resource_specification">
+                            <tree string="Resource Specification" editable="bottom">
+                                <field name="name" string="Resource Specification"/>
+                            </tree>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="product_package_list_view" model="ir.ui.view">
+        <field name="name">product.package.list</field>
+        <field name="model">product.package</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <tree string="Product Package">
+                <field name="name" string="Package ID"/>
+                <field name="product_specification"/>
+                <field name="service_specification"/>
+                <field name="resource_specification"/>
+            </tree>
+        </field>
+    </record>
+    <record id="product_package_action_form" model="ir.actions.act_window">
+        <field name="name">Product Package</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.package</field>
+        <field name="view_id" ref="product_package_list_view"/>
+    </record>
+
+    <record id="dynamic_ir_model_view" model="ir.ui.view">
+        <field name="name">ir.model.view.form</field>
+        <field name="model">ir.model</field>
+        <field name="inherit_id" ref="base.view_model_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="description"/>
+                <field name="created_by"/>
+                <field name="table_type"/>
+                <field name="from_api"/>
+            </xpath>
+            <xpath expr="//field[@name='copied']" position="after">
+                <field name="is_unique"/>
+                <field name="foreign_key"/>
+                <field name="primary_key"/>
+                <field name="limit_min"/>
+                <field name="limit_max"/>
+            </xpath>
+            <xpath expr="//sheet/group" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button class="oe_stat_button" name="get_records"
+                        type="object" icon="fa-book" string="Get Records">
+                    </button>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="dynamic_ir_model_field_view" model="ir.ui.view">
+        <field name="name">ir.model.fields.view.form</field>
+        <field name="model">ir.model.fields</field>
+        <field name="inherit_id" ref="base.view_model_fields_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='help']" position="after">
+                <field name="description"/>
+                <field name="date_format"/>
+                <field name="from_api"/>
+            </xpath>
+            <xpath expr="//field[@name='copied']" position="after">
+                <field name="is_unique"/>
+                <field name="foreign_key"/>
+                <field name="primary_key"/>
+            </xpath>
+            <xpath expr="//field[@name='size']" position="after">
+                <field name="limit_min"/>
+                <field name="limit_max"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_product_form_inherit" model="ir.ui.view">
+        <field name="name">product.form</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='categ_id']" position="after">
+                <field name="topology_type"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sale_order_view_inherit" model="ir.ui.view">
+        <field name="name">sale.orderlist.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="/form/sheet/notebook/page/field[@name='order_line']/tree/field[@name='product_id']"
+                   position="after">
+                <field name="properties"/>
+            </xpath>
+            <xpath expr="/form/sheet/notebook/page/field[@name='order_line']/tree/field[@name='product_uom_qty']"
+                   position="after">
+                <field name="frequency_type"/>
+                <field name="frequency_count"/>
+            </xpath>
+            <xpath expr="/form/sheet/notebook/page/field[@name='order_line']/tree/field[@name='discount']"
+                   position="before">
+                <field name="tax_type"/>
+                <field name="tax_value"/>
+                <field name="discount_type"/>
+            </xpath>
+        </field>
+    </record>
+
+    <menuitem id="menu_product_package" 
+        action="product_package_action_form"
+        parent ="stock.menu_stock_inventory_control" sequence="9"/>
+
+</odoo>

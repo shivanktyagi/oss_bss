@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_customer_lead,customer.lead,model_customer_lead,,1,1,1,1
+access_branch_site,branch.site,model_branch_site,,1,1,1,1
+access_redundancy_requirement,redundancy.requirement,model_redundancy_requirement,,1,1,1,1
+access_hardware_router,hardware.router,model_hardware_router,,1,1,1,1
+access_customer_application,customer.application,model_customer_application,,1,1,1,1
+access_internet_policies,internet.policies,model_internet_policies,,1,1,1,1
+

@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+		<record id="customer_lead_view_form" model="ir.ui.view">
+			<field name="name">customer.lead.form</field>
+			<field name="model">customer.lead</field>
+			<field name="arch" type="xml">
+				<form>
+					<header>
+						<button name="convert_quotation" type="object" data-hotkey="shift+g"
+                            string="Convert Quotation" class="oe_highlight" />
+						<field name="state" widget="statusbar" statusbar_visible="new,sent"/>
+					</header>
+					<sheet>
+	                	<group colspan="4" col="4" >
+	                		<field name="partner_id"  string="Company Name" domain="[('parent_id','=', False),('is_company', '=', True)]"/>
+	                		<field name="sale_order_id" readonly="1"/>
+	                        <!-- <field name="company_name"/>
+	                        <field name="title"/>
+	                        <field name="first_name"/>
+	                        <field name="middle_name"/>
+	                        <field name="last_name"/>
+	                        <field name="designation"/>
+	                        <field name="phone" widget="phone"/>
+	                        <field name="mobile"/>
+	                        <field name="email" widget="email"/> -->
+	                    </group>
+	                    <notebook>
+		                    <page name="Requirement Details"  string="Requirement Details">
+		                    	<group colspan="4" col="4">
+			                    	<field name="no_of_sites"/>
+			                        <field name="topology" widget="radio" options="{'horizontal': True}"/>
+			                        <field name="minimum_service_period"/>
+			                        <field name="cloud_on_ramp" widget="radio" options="{'horizontal': True}"/>
+			                        <field name="billing_cycle" widget="radio" options="{'horizontal': True}"/>
+			                        <field name="routing_protocol" widget="radio" options="{'horizontal': True}"/>
+
+			                    </group>
+			                    <group>
+			                        <field name="cpe" widget="radio" options="{'horizontal': True}"/>
+			                        <field name="product_id" attrs="{'invisible': [('cpe', '!=', 'new')]}"/>
+			                        <field name="no_of_device" readonly="1"/>
+			                    </group>
+		                    </page>
+		                    <page name="Add sites Details" string="Sites Details">
+		                    	<!-- <button name="%(customer_sites_action_open_form)d" string="Add Sites" class="oe_highlight" type="action" >
+		                    	</button> -->
+		                    	<field name="site_address_ids" mode="kanban" nolabel="1" colspan="2">
+		                    		<kanban>
+		                    			<field name="color"/>
+	                                    <field name="title"/>
+	                                    <field name="name"/>
+	                                    <field name="office_type"/>
+	                                    <field name="email"/>
+	                                    <field name="display_name"/>
+	                                    <field name="office_type"/>
+	                                    <field name="phone"/>
+	                                    <field name="site_type"/>
+	                                    <field name="redundancy_requirement"/>
+	                                    <templates>
+                                        	<t t-name="kanban-box">
+                                        	<t t-set="color" t-value="kanban_color(record.color.raw_value)"/>
+                                            <div t-att-class="color + (record.name.raw_value == 1 ? ' oe_kanban_color_alert' : '') + ' oe_kanban_global_click'">
+	                                            <div>
+	                                                <div class="oe_kanban_details">
+	                                                	<div t-if="record.name.raw_value"><b> Name:</b> <t t-esc="record.name.value"/></div>
+	                                                    <div t-if="record.office_type.raw_value"><b>Office Type:</b> <t t-esc="record.office_type.value"/></div>
+	                                                    <div t-if="record.phone.raw_value"><b> Phone:</b> <t t-esc="record.phone.value"/></div>
+	                                                    <div t-if="record.email.raw_value"><b> Email:</b> <t t-esc="record.email.value"/></div>
+	                                                    <div t-if="record.site_type.raw_value"><b> Site Type:</b> <t t-esc="record.site_type.value"/></div>
+	                                                    <div t-if="record.redundancy_requirement.raw_value"><b> Redundancy Requirement:</b> <t t-esc="record.redundancy_requirement.value"/></div>
+	                                                    
+	                                                </div>
+                                            	</div>
+                                        	</div>
+                                        </t>
+                                    </templates>
+		                    		</kanban>
+		                    		<form string="Add sites">
+											<group>
+												<header>
+							                		<field name="office_type" widget="radio" options="{'horizontal': True}"/>
+							                	</header>
+						                	</group>
+											<sheet>
+							                	<group colspan="4" col="4">
+							                		<field name="site_name" />
+							                		<field name="office_address" />
+							                		<field name="title" />
+							                		<field name="name" />
+							                		<field name="middle_name" />
+							                		<field name="last_name" />
+							                		<field name="extension" />
+							                		<field name="phone" widget='phone'/>
+							                		<field name="mobile"/>
+							                		<field name="email" widget='email'/>
+							                		<field name="site_type" widget="radio" options="{'horizontal': True}"/>
+							                		<field name="redundancy_requirement"/>
+							                		<field name="support_level" />
+								                	<field name="office_site_sla"/>
+							                	</group>
+						                		<group string='Transport Link'>
+							                		<group colspan="4" col="4">
+							                			<field name="existing_transport_link" widget="radio" options="{'horizontal': True}" />
+								                		<field name="transport_link_1_type" widget="radio" options="{'horizontal': True}"/>
+								                		<field name="transport_link_1_bandwidth" />
+								                		<field name="transport_link_1_media" />
+								                		<field name="transport_link_1_sla" />
+								                	</group>
+							                		<group colspan="4" col="4" string='Transport Link-2'>
+								                		<field name="transport_link_2_type" widget="radio" options="{'horizontal': True}" />
+								                		<field name="transport_link_2_bandwidth" />
+								                		<field name="transport_link_2_sla" />
+								                		<field name="transport_link_2_media" />
+							                		</group>
+							                	</group>
+								                <group string='Hardware Router'>
+								                	<group colspan="4" col="4">
+								                		<field name="router_1_model"/>
+								                		<field name="router_2_model" />
+								                		
+								                	</group>
+								                </group>
+							                </sheet>
+							            </form>
+							        </field>
+		                    </page>
+		                    <page name="Application Details" string="Key Application Details">
+		                    	<group colspan="4" col="4">
+			                    	<field name="no_of_applications"/>
+			                    	<!-- <button name="%(customer_applications_action_open_form)d" string="Add Application" class="oe_highlight" type="action" >
+		                    	</button> -->
+		                    	</group>
+		                    	<field name="applications_ids" mode="kanban" nolabel="1" colspan="2">
+		                    		<kanban>
+                                        <field name="application_name"/>
+                                        <field name="application_hosted"/>
+                                        <field name="concurrent_users"/>
+                                        <field name="priority"/>
+                                        <field name="color"/>
+                                        <field name="qos_parameter"/>
+                                        <templates>
+                                        	<t t-name="kanban-box">
+                                        	<t t-set="color" t-value="kanban_color(record.color.raw_value)"/>
+                                            <div t-att-class="color + (record.application_name.raw_value == 1 ? ' oe_kanban_color_alert' : '') + ' oe_kanban_global_click'">
+	                                            <div>
+	                                                <div class="oe_kanban_details">
+	                                                	<div t-if="record.application_name.raw_value"><b>Application Name:</b> <t t-esc="record.application_name.value"/></div>
+	                                                    <div t-if="record.application_hosted.raw_value"><b>Hosted:</b> <t t-esc="record.application_hosted.value"/></div>
+	                                                    <div t-if="record.concurrent_users.raw_value"><b>Concurrent Users:</b> <t t-esc="record.concurrent_users.value"/></div>
+	                                                    <div t-if="record.qos_parameter.raw_value"><b>Qos Parameter:</b> <t t-esc="record.qos_parameter.value"/></div>
+	                                                    <div t-if="record.priority.raw_value"><b>priority:</b> <t t-esc="record.priority.value" widget="priority"/> </div>
+	                                                </div>
+                                            	</div>
+                                        	</div>
+                                        </t>
+                                    </templates>
+                                    </kanban>
+                                </field>
+                            	<!-- </group> -->
+		                    </page>
+		                    <page name="Internet Usage  &amp; Security Policy" string="Internet Usage and Security Policy">
+		                    	<group>
+			                    	<group>
+			                    		<field name="branch_site_internet_usage_id" widget="many2many_tags"/>
+			                    		<field name="intrusion_prevention_system" widget="radio" options="{'horizontal': True}"/>
+			                    	</group>
+			                    	<group colspan="4" col="4">
+			                    		<field name="url_filtering" widget="radio" options="{'horizontal': True}"/>
+			                    		<field name="local_attack_defence" widget="radio" options="{'horizontal': True}"/>
+			                    	</group>
+			                    </group>
+			                    <group string="Sites Internet  &amp; Security Policy" >
+			                    	<field name="internet_policy_ids" 
+			                    		widget="section_and_note_one2many"
+	                                	mode="tree,kanban" nolabel="1" 
+	                            	>
+		                                <form>
+					                    	<group>
+					                    		<field name="site_id" domain="[('is_company', '=', False)]"/>
+					                    		<field name="branch_site_internet_usage_id" widget="many2many_tags"/>
+					                    		<field name="intrusion_prevention_system" widget="radio" options="{'horizontal': True}"/>
+					                    	</group>
+					                    	<group colspan="4" col="4">
+					                    		<field name="url_filtering" widget="radio" options="{'horizontal': True}"/>
+					                    		<field name="local_attack_defence" widget="radio" options="{'horizontal': True}"/>
+					                    	</group>
+				                    	</form>
+			                		</field>
+		                		</group>
+		                    </page>
+	                </notebook>
+                    </sheet>
+				</form>
+			</field>
+		</record>
+
+        <record id="internet_policies_tree_view" model="ir.ui.view">
+            <field name="name">internet.policies.tree</field>
+            <field name="model">internet.policies</field>
+            <field name="arch" type="xml">
+                <tree string="Internet Policies">
+	            	<field name="site_id"/>
+	                <field name="branch_site_internet_usage_id"/>
+	                <field name="intrusion_prevention_system"/>
+	                <field name="url_filtering"/>
+	                <field name="local_attack_defence"/>
+                </tree>
+            </field>
+       </record>
+
+        <record id="customer_case_tree_view_leads" model="ir.ui.view">
+            <field name="name">customer.lead.tree.lead</field>
+            <field name="model">customer.lead</field>
+            <field name="arch" type="xml">
+                <tree string="Custome Requirements" sample="1" multi_edit="1">
+                    	<field name="partner_id"/>
+                        <field name="no_of_sites"/>
+                        <field name="billing_cycle"/>
+                        <field name="topology"/>
+                        <field name="routing_protocol"/>
+                    </tree>
+                </field>
+            </record>
+        <!-- Lead Menu -->
+        <record model="ir.actions.act_window" id="customer_lead_all_leads">
+            <field name="name">Customer Requirements</field>
+            <field name="res_model">customer.lead</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Customer a Requirements
+                </p><p>
+                    Requirements are the qualification step before the creation of an opportunity.
+                </p>
+            </field>
+        </record>
+
+        <record id="customer_lead_all_leads_view_tree" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="customer_case_tree_view_leads"/>
+            <field name="act_window_id" ref="customer_lead_all_leads"/>
+        </record>
+
+
+
+		<!-- create a customer lead from 'Teams' kanban -->
+        <record id="crm_lead_action_open_lead_form" model="ir.actions.act_window">
+            <field name="name">Customer Requirements</field>
+            <field name="res_model">customer.lead</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="customer_lead_view_form"/>
+        </record>
+
+
+    <!-- Customer Leads (MAIN USER MENU) -->
+    <menuitem
+        id="customer_menu_lead"
+        name="Customer Requirements"
+        parent="crm.crm_menu_root"
+        sequence="3"/>
+
+    <menuitem
+        id="menu_crm_opportunities"
+        name="Customer Requirements"
+        parent="customer_menu_lead"
+        action="customer_lead_all_leads"
+        sequence="1"/>
+
+
+<!--     <menuitem
+        id="customer_menu_leads"
+        name="Customer Requirements"
+        parent="crm.crm_menu_leads"
+        action="customer_lead_all_leads"
+        groups="crm.group_use_lead"
+        sequence="1"/>   -->   
+</odoo>

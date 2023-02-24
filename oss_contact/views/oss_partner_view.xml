@@ -287,6 +287,11 @@
         <field name="arch" type="xml">
             <form string="Organisation">
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" name="get_sites_records" icon="fa-sitemap">
+                            <span class="o_stat_value">Sites</span>
+                        </button>
+                    </div>
                     <field name="image_1920" widget="image" class="oe_avatar"/>
                     <div class="oe_title">
                         <label for="name"/>
@@ -299,7 +304,7 @@
                             <field name="registration_no"/>
                             <field name="industry_id"/>
                             <field name="comment" string="Description"/>
-                            <field name="parent_organisation_id" widget="res_partner_many2one"/>
+                            <field name="parent_organisation_id" widget="res_partner_many2one" context="{'form_view_ref':'oss_contact.view_organisation_form'}"/>
                             <field name="same_as_org_address"/>
                             <label for="invoice_address_1" string="Billing Address"/>
                             <div class="o_address_format">
@@ -321,7 +326,7 @@
                                 <field name="city" placeholder="City" style="width: 50%" class="o_address_city"/>
                                 <field name="state_id" class="o_address_state" style="width: 46%" placeholder="State" options="{'no_open': True, 'no_quick_create': True}" context="{'country_id': country_id, 'default_country_id': country_id, 'zip': zip}"/>
                             </div>
-                            <field name="spoc_id"/>
+                            <field name="spoc_id" context="{'form_view_ref':'oss_contact.view_res_organisation_contact_form'}"/>
                             <field name="no_of_account"/>
                         </group>
                     </group>
@@ -329,23 +334,22 @@
                         <page string="Account Details" name="bank_account_ids">
                             <field name="bank_ids">
                                 <tree>
-                                    <field name="acc_number"/>
                                     <field name="acc_holder_name"/>
+                                    <field name="acc_number"/>
                                     <field name="bank_id"/>
-                                    <field name="bank_spoc_id"/>
+                                    <field name="bank_spoc_id" context="{'form_view_ref':'oss_contact.view_res_organisation_contact_form'}"/>
                                 </tree>
                             </field>
                         </page>
                         <page string="Contacts" name="org_contact_ids">
-<!--                            <field name="org_contact_ids" widget="many2many_tags">-->
-                            <field name="org_contact_ids">
+                            <field name="org_contact_ids" context="{'form_view_ref':'oss_contact.view_res_organisation_contact_form'}">
                                 <tree>
-                                    <field name="emp_id"/>
                                     <field name="name"/>
-                                    <field name="designation" string="Role"/>
+                                    <field name="spoc_role"/>
+                                    <field name="other_role"/>
+                                    <field name="designation" string="Additional Role"/>
                                     <field name="organisation_id"/>
-                                    <field name="preferred_contact_medium"/>
-                                    <field name="preferred_contact_details"/>
+                                    <field name="preferred_type"/>
                                     <field name="email"/>
                                     <field name="phone"/>
                                 </tree>
@@ -362,6 +366,9 @@
         <field name="arch" type="xml">
             <tree string="Organisation">
                 <field name="name"/>
+                <field name="parent_organisation_id"/>
+                <field name="spoc_id"/>
+                <field name="no_of_account"/>
                 <field name="parent_organisation_id"/>
             </tree>
         </field>
@@ -387,7 +394,6 @@
    <record id="view_res_organisation_contact_form" model="ir.ui.view">
         <field name="name">res.partner.organisation.contact.form</field>
         <field name="model">res.partner</field>
-        <field name="priority" eval="1"/>
         <field name="arch" type="xml">
             <form string="Organisation Contact">
                 <sheet>
@@ -405,18 +411,33 @@
                     </div>
                     <group>
                         <group>
-                            <field name="organisation_id"/>
-                            <field name="designation" string="Role"/>
-                            <field name="emp_id"/>
-                            <field name="preferred_contact_medium"/>
-                            <field name="preferred_contact_details"/>
+                            <field name="preferred_type"/>
+                            <field name="organisation_id" context="{'form_view_ref':'oss_contact.view_organisation_form'}"/>
+                            <span class="o_form_label o_td_label">
+                                <b>Email</b>
+                            </span>
+                            <div class="oe_title oe_inline">
+                                <field name="email_enable" nolabel="1" class="oe_inline ml8"/>
+                                <field name="email" nolabel="1" class="oe_inline"/>
+                            </div>
+                            <span class="o_form_label o_td_label">
+                                <b>Phone</b>
+                            </span>
+                            <div class="oe_title oe_inline">
+                                <field name="phone_enable" nolabel="1" class="oe_inline ml8"/>
+                                <field name="phone_code" nolabel="1" class="oe_inline" style="width:20%;"/>
+                                <field name="phone" nolabel="1" class="oe_inline ml8"/>
+                            </div>
                         </group>
                         <group>
-                            <field name="email"/>
-                            <field name="phone"/>
-                            <field name="is_org_spoc"/>
-                            <field name="is_bank_spoc"/>
-                            <field name="is_site_spoc"/>
+                            <field name="spoc_role"/>
+                            <field name="other_role"/>
+                            <span class="o_form_label o_td_label">
+                                <b>Additional Role</b>
+                            </span>
+                            <div class="oe_title oe_inline">
+                                <field name="designation" nolabel="1" class="oe_inline" placeholder="Product Manager"/>
+                            </div>
                         </group>
                     </group>
                     <notebook>
@@ -424,7 +445,10 @@
                             <field name="other_detail_ids">
                                 <tree editable="bottom">
                                     <field name="medium_id"/>
+                                    <field name="phone_code"/>
                                     <field name="medium_detail"/>
+                                    <field name="is_preferred_contact" widget="boolean_favorite" nolabel="1"/>
+                                    <field name="enable"/>
                                 </tree>
                             </field>
                         </page>
@@ -443,6 +467,7 @@
             <tree string="Organisation Contact">
                 <field name="name"/>
                 <field name="email"/>
+                <!-- <field name="preferred_type"/> -->
             </tree>
         </field>
     </record>
@@ -522,10 +547,22 @@
                         </group>
                         <group>
                             <field name="bank_id"/>
-                            <field name="bank_spoc_id"/>
+                            <field name="bank_spoc_id" context="{'form_view_ref':'oss_contact.view_res_organisation_contact_form'}"/>
                         </group>
                     </group>
                 </sheet>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="org_partner_bank">
+        <field name="name">view.partner.bank.tree</field>
+        <field name="model">res.partner.bank</field>
+        <field name="inherit_id" ref="base.view_partner_bank_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='bank_name']" position="before">
+                <field name="acc_holder_name"/>
+                <field name="bank_spoc_id"/>
             </xpath>
         </field>
     </record>
